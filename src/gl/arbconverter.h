@@ -1,8 +1,17 @@
-#ifndef _GL4ES_ARBCONVERTER_H_
-#define _GL4ES_ARBCONVERTER_H_
+#ifndef _GL4ES_SHADERCONV_H_
+#define _GL4ES_SHADERCONV_H_
 
-#include <stdint.h>
+#include "gles.h"
+#include "program.h"
 
-char* gl4es_convertARB(const char* const code, int vertex, char **error_msg, int *error_ptr);
+char * ConvertShaderConditionally(struct shader_s * shader_source);
+char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need, int forwardPort);
 
-#endif // _GL4ES_ARBCONVERTER_H_
+int isBuiltinAttrib(const char* name);
+int isBuiltinMatrix(const char* name);
+
+const char* hasBuiltinAttrib(const char* vertexShader, int Att);
+const char* builtinAttribGLName(const char* name);
+const char* builtinAttribInternalName(const char* name);
+
+#endif // _GL4ES_SHADERCONV_H_
