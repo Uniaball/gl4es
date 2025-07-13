@@ -26,11 +26,17 @@ jobs:
         -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_LATEST_HOME/build/cmake/android.toolchain.cmake \
         -DANDROID_TOOLCHAIN=clang
     - name: Build
-      run: cmake --build build --config Release --parallel $(nproc)
+      run: cmake --build build --target GL --config Release --parallel $(nproc)
+
+    - name: Strip
+      run: |
+        cd build
+        $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip libGL.so.1 -o libGL.so
+        
 
    
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: GL4ES
-        path: build/*.so
+        path: build/libGL.so
