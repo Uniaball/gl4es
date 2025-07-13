@@ -28,13 +28,9 @@ jobs:
     - name: Build
       run: cmake --build build --config Release --parallel $(nproc)
 
-    - name: Strip
-      run: |
-        cd build
-        $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip libgl4es.so
-        
+   
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: GL4ES
-        path: build/libgl4es.so
+        path: build/*.so
