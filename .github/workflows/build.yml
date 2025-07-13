@@ -30,7 +30,7 @@ jobs:
 
     - name: Strip
       run: |
-        cd build
+        cd lib
         $ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip libGL.so.1 -o libGL.so
         
 
