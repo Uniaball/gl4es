@@ -10,6 +10,12 @@
 #include "shader_hacks.h"
 #include "logs.h"
 
+
+
+char* InplaceReplace(char* buffer, size_t* size, const char* search, const char* replace);
+char* InplaceInsert(char* buffer, const char* insert, char* pos, size_t* size);
+char* GetLine(char* buffer, int line);
+
 typedef struct {
     const char* glname;
     const char* name;
