@@ -125,7 +125,7 @@ static const char* gl4es_MaxTextureCoordsSource =
 #undef STR
 #undef STR_HELPER
 
-static const char* gl4es_LightSourceParametersSource = 
+static const char* gl4es_LightSourceParametersSource =
 "struct gl_LightSourceParameters\n"
 "{\n"
 "   vec4 ambient;\n"
@@ -198,7 +198,7 @@ static const char* gl4es_FogParametersSource =
 "    mediump float density;\n"
 "    mediump float start;\n"
 "    mediump float end;\n"
-"    mediump float scale;\n"   // Derived:   1.0 / (end - start) 
+"    mediump float scale;\n"   // Derived:   1.0 / (end - start)
 "};\n"
 "uniform gl_FogParameters gl_Fog;\n";
 static const char* gl4es_FogParametersSourceHighp =
@@ -207,7 +207,7 @@ static const char* gl4es_FogParametersSourceHighp =
 "    mediump float density;\n"
 "    highp   float start;\n"
 "    highp   float end;\n"
-"    highp   float scale;\n"   // Derived:   1.0 / (end - start) 
+"    highp   float scale;\n"   // Derived:   1.0 / (end - start)
 "};\n"
 "uniform gl_FogParameters gl_Fog;\n";
 
@@ -226,7 +226,7 @@ static const char* gl4es_texgenobjSource[4] = {
 "uniform vec4 gl_ObjectPlaneR[gl_MaxTextureCoords];\n",
 "uniform vec4 gl_ObjectPlaneQ[gl_MaxTextureCoords];\n" };
 
-static const char* gl4es_clipplanesSource = 
+static const char* gl4es_clipplanesSource =
 "uniform vec4  gl_ClipPlane[gl_MaxClipPlanes];\n";
 
 static const char* gl4es_normalscaleSource =
@@ -257,21 +257,14 @@ static const char* gl4es_texcoordSourceAlt =
 static const char* gl4es_fogcoordSource =
 "varying mediump float _gl4es_FogFragCoord;\n";
 
-static const char* gl4es_ftransformSource = 
+static const char* gl4es_ftransformSource =
 "\n"
 "highp vec4 ftransform() {\n"
 " return gl_ModelViewProjectionMatrix * gl_Vertex;\n"
 "}\n";
 
-static const char* gl4es_ClipVertex = 
-"vec4 gl4es_ClipVertex;\n";
-
-static const char* gl4es_ClipVertexSource = 
-"gl4es_ClipVertex";
-
-static const char* gl4es_ClipVertex_clip =
-"\nif(any(lessThanEqual(gl4es_ClipVertex.xyz, vec3(-gl4es_ClipVertex.w)))"
-" || any(greaterThanEqual(gl4es_ClipVertex.xyz, vec3(gl4es_ClipVertex.w)))) discard;\n";
+static const char* gl4es_dummyClipVertex =
+"vec4 dummyClipVertex_%d";
 
 static const char* gl_TexCoordSource = "gl_TexCoord[";
 
@@ -285,46 +278,47 @@ static const char* gl_TexMatrixSources[] = {
 static const char* GLESHeader[] = {
   "#version 100\n%sprecision %s float;\nprecision %s int;\n",
   "#version 120\n%sprecision %s float;\nprecision %s int;\n",
-  "#version 310 es\n#define attribute in\n#define varying out\n%sprecision %s float;\nprecision %s int;\n",
-  "#version 300 es\n#define attribute in\n#define varying out\n%sprecision %s float;\nprecision %s int;\n"
+  "#version 310 es\n%sprecision %s float;\nprecision %s int;\n",
+  "#version 300 es\n%sprecision %s float;\nprecision %s int;\n",
+  "#version 320 es\n%sprecision %s float;\nprecision %s int;\n"
 };
 
 static const char* gl4es_transpose =
 "mat2 gl4es_transpose(mat2 m) {\n"
-" return mat2(m[0][0], m[1][0],\n"
-"             m[0][1], m[1][1]);\n"
+" return mat2(m[0][0], m[0][1],\n"
+"             m[1][0], m[1][1]);\n"
 "}\n"
 "mat3 gl4es_transpose(mat3 m) {\n"
-" return mat3(m[0][0], m[1][0], m[2][0],\n"
-"             m[0][1], m[1][1], m[2][1],\n"
-"             m[0][2], m[1][2], m[2][2]);\n"
+" return mat3(m[0][0], m[0][1], m[0][2],\n"
+"             m[1][0], m[1][1], m[1][2],\n"
+"             m[2][0], m[2][1], m[2][2]);\n"
 "}\n"
 "mat4 gl4es_transpose(mat4 m) {\n"
-" return mat4(m[0][0], m[1][0], m[2][0], m[3][0],\n"
-"             m[0][1], m[1][1], m[2][1], m[3][1],\n"
-"             m[0][2], m[1][2], m[2][2], m[3][2],\n"
-"             m[0][3], m[1][3], m[2][3], m[3][3]);\n"
+" return mat4(m[0][0], m[0][1], m[0][2], m[0][3],\n"
+"             m[1][0], m[1][1], m[1][2], m[1][3],\n"
+"             m[2][0], m[2][1], m[2][2], m[2][3],\n"
+"             m[3][0], m[3][1], m[3][2], m[3][3]);\n"
 "}\n";
 
-static const char* HackAltPow = 
+static const char* HackAltPow =
 "float pow(float f, int a) {\n"
 " return pow(f, float(a));\n"
 "}\n";
-static const char* HackAltMax = 
+static const char* HackAltMax =
 "float max(float a, int b) {\n"
 " return max(a, float(b));\n"
 "}\n"
 "float max(int a, float b) {\n"
 " return max(float(a), b);\n"
 "}\n";
-static const char* HackAltMin = 
+static const char* HackAltMin =
 "float min(float a, int b) {\n"
 " return min(a, float(b));\n"
 "}\n"
 "float min(int a, float b) {\n"
 " return min(float(a), b);\n"
 "}\n";
-static const char* HackAltClamp = 
+static const char* HackAltClamp =
 "float clamp(float f, int a, int b) {\n"
 " return clamp(f, float(a), float(b));\n"
 "}\n"
@@ -363,7 +357,7 @@ static const char* HackAltClamp =
 "}\n";
 
 
-static const char* HackAltMod = 
+static const char* HackAltMod =
 "float mod(float f, int a) {\n"
 " return mod(f, float(a));\n"
 "}\n"
@@ -437,10 +431,8 @@ static const char* gl4es_VertexAttrib = "_gl4es_VertexAttrib_";
 char gl_VA[MAX_VATTRIB][32] = {0};
 char gl4es_VA[MAX_VATTRIB][32] = {0};
 
-char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
+char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, int forwardPort)
 {
-  #define ShadAppend(S) Tmp = gl4es_append(Tmp, &tmpsize, S)
-
   if(gl_VA[0][0]=='\0') {
     for (int i=0; i<MAX_VATTRIB; ++i) {
       sprintf(gl_VA[i], "%s%d", gl_VertexAttrib, i);
@@ -451,10 +443,10 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   int maskbefore = 4|(isVertex?1:2);
   int maskafter = 8|(isVertex?1:2);
   if((globals4es.dbgshaderconv&maskbefore)==maskbefore) {
-    printf("Shader source%s:\n%s\n", fpeShader?" (FPEShader generated)":"", pEntry);
+    printf("Shader source%s:\n%s\n", pEntry, fpeShader?" (FPEShader generated)":"");
   }
   int comments = globals4es.comments;
-  
+
   char* pBuffer = (char*)pEntry;
 
   int version120 = 0;
@@ -472,7 +464,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
     // now comment all line starting with precision...
     if(strstr(pBuffer, "\nprecision")) {
       int sz = strlen(pBuffer);
-      pBuffer = gl4es_inplace_replace(pBuffer, &sz, "\nprecision", "\n//precision");
+      pBuffer = InplaceReplace(pBuffer, &sz, "\nprecision", "\n//precision");
     }
     // should do something with the extension list...
     if(exts.ext)
@@ -487,25 +479,21 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   }
   int notexarray = globals4es.notexarray || need->need_notexarray || fpeShader;
 
-  //const char* GLESUseFragHighp = "#extension GL_OES_fragment_precision_high : enable\n"; // is this needed?  
+  //const char* GLESUseFragHighp = "#extension GL_OES_fragment_precision_high : enable\n"; // does this one is needed?
   char GLESFullHeader[512];
   int wanthighp = !fpeShader;
   if(wanthighp && !hardext.highp) wanthighp = 0;
   int versionHeader = 0;
-  #if 0
-  // support for higher glsl require much more work
-  // around some keyword
-  // like in/out that depends on the shader being vertex or fragment
-  // and a few other little things...
-  if(versionString && strcmp(versionString, "120")==0)
-     version120 = 1;
+  printf("version string: %s", versionString);
+  if(versionString && (strcmp(versionString, "120")==0 || strcmp(versionString, "110")==0 || strstr(versionString, "150") != NULL))
+     version120 = forwardPort ? 1 : 0;
   if(version120) {
     if(hardext.glsl120) versionHeader = 1;
+    else if(hardext.glsl320es) versionHeader = 4;
     else if(hardext.glsl310es) versionHeader = 2;
     else if(hardext.glsl300es) { versionHeader = 3; /* location on uniform not supported ! */ }
     /* else no location or in / out are supported */
   }
-  #endif
   //sprintf(GLESFullHeader, GLESHeader, (wanthighp && hardext.highp==1 && !isVertex)?GLESUseFragHighp:"", (wanthighp)?"highp":"mediump", (wanthighp)?"highp":"mediump");
   sprintf(GLESFullHeader, GLESHeader[versionHeader], "", (wanthighp)?"highp":"mediump", (wanthighp)?"highp":"mediump");
 
@@ -517,28 +505,20 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   char* newptr;
   newptr=strstr(Tmp, "#version");
   if (!newptr) {
-    Tmp = gl4es_inplace_insert(Tmp, GLESFullHeader, Tmp, &tmpsize);
+    Tmp = InplaceInsert(Tmp, GLESFullHeader, Tmp, &tmpsize);
   } else {
     while(*newptr!=0x0a) newptr++;
     newptr++;
     memmove(Tmp, newptr, strlen(newptr)+1);
-    Tmp = gl4es_inplace_insert(Tmp, GLESFullHeader, Tmp, &tmpsize);
+    Tmp = InplaceInsert(Tmp, GLESFullHeader, Tmp, &tmpsize);
   }
   int headline = 3;
-  // move all "#extension in header zone"
-  while (strstr(Tmp, "#extension") && strstr(Tmp, "#extension")>gl4es_getline(Tmp, headline-2)) {
-    char* ext = strstr(Tmp, "#extension");
-    size_t l = (uintptr_t)strstr(ext, "\n")-(uintptr_t)ext + sizeof("\n");
-#ifndef _MSC_VER
-    char e[l];
-#else
-    char* e = _alloca(l);
-#endif
-    memset(e, 0, l);
-    strncpy(e, ext, l-1);
-    Tmp = gl4es_inplace_replace_simple(Tmp, &tmpsize, e, "");
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline-2), e, Tmp, &tmpsize);
-    ++headline;
+  int texture3D = (strstr(pBuffer, "texture3D")) ? 1 : 0;
+  const char* GLESUseTexture3D = "#extension GL_OES_texture_3D : enable\nprecision lowp sampler3D;\n";
+  if (texture3D)
+  {
+      Tmp = InplaceInsert(GetLine(Tmp, 1), GLESUseTexture3D, Tmp, &tmpsize);
+      headline++;
   }
   // check if gl_FragDepth is used
   int fragdepth = (strstr(pBuffer, "gl_FragDepth"))?1:0;
@@ -547,17 +527,17 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   if (fragdepth) {
     /* If #extension is used, it should be placed before the second line of the header. */
     if(hardext.fragdepth)
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 1), GLESUseFragDepth, Tmp, &tmpsize);
+      Tmp = InplaceInsert(GetLine(Tmp, 1), GLESUseFragDepth, Tmp, &tmpsize);
     else
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline-1), GLESFakeFragDepth, Tmp, &tmpsize);
+      Tmp = InplaceInsert(GetLine(Tmp, headline-1), GLESFakeFragDepth, Tmp, &tmpsize);
     headline++;
   }
-
-  const char* GLESUseShaderNonConstantGlobalInitialzers = "#extension GL_EXT_shader_non_constant_global_initializers : enable\n";
-  Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 1), GLESUseShaderNonConstantGlobalInitialzers, Tmp, &tmpsize);
-  ++headline;
-
-  Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline-1), "#define GL4ES\n", Tmp, &tmpsize);
+  // check if the shader uses 3D textures
+  int threed_texture = (strstr(pBuffer, "sampler3D"))?1:0;
+  const char* GLESUse3DTexture = "#extension GL_OES_texture_3D : enable\n";
+  if(threed_texture) {
+      Tmp = InplaceInsert(GetLine(Tmp, 1), GLESUse3DTexture, Tmp, &tmpsize); // no fallback possible if device does not support 3D textures
+  }
 
   int derivatives = (strstr(pBuffer, "dFdx(") || strstr(pBuffer, "dFdy(") || strstr(pBuffer, "fwidth("))?1:0;
   const char* GLESUseDerivative = "#extension GL_OES_standard_derivatives : enable\n";
@@ -569,105 +549,91 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   if (derivatives) {
     /* If #extension is used, it should be placed before the second line of the header. */
     if(hardext.derivatives)
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 1), GLESUseDerivative, Tmp, &tmpsize);
+      Tmp = InplaceInsert(GetLine(Tmp, 1), GLESUseDerivative, Tmp, &tmpsize);
     else
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline-1), GLESFakeDerivative, Tmp, &tmpsize);
+      Tmp = InplaceInsert(GetLine(Tmp, headline-1), GLESFakeDerivative, Tmp, &tmpsize);
     headline++;
   }
   // check if draw_buffers may be used (no fallback here :( )
   if(hardext.maxdrawbuffers>1 && strstr(pBuffer, "gl_FragData[")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 1), useEXTDrawBuffers, Tmp, &tmpsize);
+    Tmp = InplaceInsert(GetLine(Tmp, 1), useEXTDrawBuffers, Tmp, &tmpsize);
   }
   // if some functions are used, add some int/float alternative
   if(!fpeShader && !globals4es.nointovlhack) {
     if(strstr(Tmp, "pow(") || strstr(Tmp, "pow (")) {
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), HackAltPow, Tmp, &tmpsize);
+        Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltPow, Tmp, &tmpsize);
     }
     if(strstr(Tmp, "max(") || strstr(Tmp, "max (")) {
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), HackAltMax, Tmp, &tmpsize);
+        Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltMax, Tmp, &tmpsize);
     }
     if(strstr(Tmp, "min(") || strstr(Tmp, "min (")) {
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), HackAltMin, Tmp, &tmpsize);
+        Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltMin, Tmp, &tmpsize);
     }
     if(strstr(Tmp, "clamp(") || strstr(Tmp, "clamp (")) {
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), HackAltClamp, Tmp, &tmpsize);
+        Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltClamp, Tmp, &tmpsize);
     }
     if(strstr(Tmp, "mod(") || strstr(Tmp, "mod (")) {
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), HackAltMod, Tmp, &tmpsize);
+        Tmp = InplaceInsert(GetLine(Tmp, headline), HackAltMod, Tmp, &tmpsize);
     }
   }
-  if(!isVertex && hardext.shaderlod && 
-    (gl4es_find_string(Tmp, "texture2DLod") || gl4es_find_string(Tmp, "texture2DProjLod") 
-  || gl4es_find_string(Tmp, "textureCubeLod") 
-  || gl4es_find_string(Tmp, "texture2DGradARB") || gl4es_find_string(Tmp, "texture2DProjGradARB")|| gl4es_find_string(Tmp, "textureCubeGradARB") 
+  if(!isVertex && hardext.shaderlod &&
+    (FindString(Tmp, "texture2DLod") || FindString(Tmp, "texture2DProjLod")
+  || FindString(Tmp, "textureCubeLod")
+  || FindString(Tmp, "texture2DGradARB") || FindString(Tmp, "texture2DProjGradARB")|| FindString(Tmp, "textureCubeGradARB")
   )) {
       const char* GLESUseShaderLod = "#extension GL_EXT_shader_texture_lod : enable\n";
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 1), GLESUseShaderLod, Tmp, &tmpsize);
+      Tmp = InplaceInsert(GetLine(Tmp, 1), GLESUseShaderLod, Tmp, &tmpsize);
   }
-  if(!isVertex && (gl4es_find_string(Tmp, "texture2DLod"))) {
+  if(!isVertex && (FindString(Tmp, "texture2DLod"))) {
       if(hardext.shaderlod) {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DLod", "texture2DLodEXT");
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DLod", "texture2DLodEXT");
       } else {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DLod", "_gl4es_texture2DLod");
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), texture2DLodAlt, Tmp, &tmpsize);
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DLod", "_gl4es_texture2DLod");
+        Tmp = InplaceInsert(GetLine(Tmp, headline), texture2DLodAlt, Tmp, &tmpsize);
       }
   }
-  if(!isVertex && (gl4es_find_string(Tmp, "texture2DProjLod"))) {
+  if(!isVertex && (FindString(Tmp, "texture2DProjLod"))) {
       if(hardext.shaderlod) {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DProjLod", "texture2DProjLodEXT");
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DProjLod", "texture2DProjLodEXT");
       } else {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DProjLod", "_gl4es_texture2DProjLod");
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), texture2DProjLodAlt, Tmp, &tmpsize);
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DProjLod", "_gl4es_texture2DProjLod");
+        Tmp = InplaceInsert(GetLine(Tmp, headline), texture2DProjLodAlt, Tmp, &tmpsize);
       }
   }
-  if(!isVertex && (gl4es_find_string(Tmp, "textureCubeLod"))) {
-      if(hardext.shaderlod) {
-        if(!hardext.cubelod)
-          Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "textureCubeLod", "textureCubeLodEXT");
-      } else {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "textureCubeLod", "_gl4es_textureCubeLod");
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), textureCubeLodAlt, Tmp, &tmpsize);
-      }
-  }
-  if(!isVertex && (gl4es_find_string(Tmp, "texture2DGradARB"))) {
-      if(hardext.shaderlod) {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DGradARB", "texture2DGradEXT");
-      } else {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DGradARB", "_gl4es_texture2DGrad");
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), texture2DGradAlt, Tmp, &tmpsize);
-      }
-  }
-  if(!isVertex && (gl4es_find_string(Tmp, "texture2DProjGradARB"))) {
-      if(hardext.shaderlod) {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DProjGradARB", "texture2DProjGradEXT");
-      } else {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "texture2DProjGradARB", "_gl4es_texture2DProjGrad");
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), texture2DProjGradAlt, Tmp, &tmpsize);
-      }
-  }
-  if(!isVertex && (gl4es_find_string(Tmp, "textureCubeGradARB"))) {
+  if(!isVertex && (FindString(Tmp, "textureCubeLod"))) {
       if(hardext.shaderlod) {
         if(!hardext.cubelod)
-          Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "textureCubeGradARB", "textureCubeGradEXT");
+          Tmp = InplaceReplace(Tmp, &tmpsize, "textureCubeLod", "textureCubeLodEXT");
       } else {
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "textureCubeGradARB", "_gl4es_textureCubeGrad");
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), textureCubeGradAlt, Tmp, &tmpsize);
+        Tmp = InplaceReplace(Tmp, &tmpsize, "textureCubeLod", "_gl4es_textureCubeLod");
+        Tmp = InplaceInsert(GetLine(Tmp, headline), textureCubeLodAlt, Tmp, &tmpsize);
       }
   }
-
-  // Some drivers have troubles with "\\\r\n" or "\\\n" sequences on preprocessor macros 
-  newptr = Tmp;
-  while (*newptr!=0x00) {
-    if (*newptr == '\\') {
-      if (*(newptr+1) == '\r' && *(newptr+2) == '\n')
-        memmove(newptr, newptr+3, strlen(newptr+3)+1);
-      else if (*(newptr+1) == '\n')
-        memmove(newptr, newptr+2, strlen(newptr+2)+1);
-    }
-
-    newptr++;
+  if(!isVertex && (FindString(Tmp, "texture2DGradARB"))) {
+      if(hardext.shaderlod) {
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DGradARB", "texture2DGradEXT");
+      } else {
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DGradARB", "_gl4es_texture2DGrad");
+        Tmp = InplaceInsert(GetLine(Tmp, headline), texture2DGradAlt, Tmp, &tmpsize);
+      }
   }
-
+  if(!isVertex && (FindString(Tmp, "texture2DProjGradARB"))) {
+      if(hardext.shaderlod) {
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DProjGradARB", "texture2DProjGradEXT");
+      } else {
+        Tmp = InplaceReplace(Tmp, &tmpsize, "texture2DProjGradARB", "_gl4es_texture2DProjGrad");
+        Tmp = InplaceInsert(GetLine(Tmp, headline), texture2DProjGradAlt, Tmp, &tmpsize);
+      }
+  }
+  if(!isVertex && (FindString(Tmp, "textureCubeGradARB"))) {
+      if(hardext.shaderlod) {
+        if(!hardext.cubelod)
+          Tmp = InplaceReplace(Tmp, &tmpsize, "textureCubeGradARB", "textureCubeGradEXT");
+      } else {
+        Tmp = InplaceReplace(Tmp, &tmpsize, "textureCubeGradARB", "_gl4es_textureCubeGrad");
+        Tmp = InplaceInsert(GetLine(Tmp, headline), textureCubeGradAlt, Tmp, &tmpsize);
+      }
+  }
     // now check to remove trailling "f" after float, as it's not supported too
   newptr = Tmp;
   // simple state machine...
@@ -681,7 +647,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
           state = 2;  // fractional part
         else if ((*newptr==' ') || (*newptr==0x0d) || (*newptr==0x0a) || (*newptr=='-') || (*newptr=='+') || (*newptr=='*') || (*newptr=='/') || (*newptr=='(') || (*newptr==')' || (*newptr=='>') || (*newptr=='<')))
           state = 0; // separator
-        else 
+        else
           state = 3; // something else
         break;
       case 1: // integer part
@@ -713,41 +679,44 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
       case 3:
         if ((*newptr==' ') || (*newptr==0x0d) || (*newptr==0x0a) || (*newptr=='-') || (*newptr=='+') || (*newptr=='*') || (*newptr=='/') || (*newptr=='(') || (*newptr==')' || (*newptr=='>') || (*newptr=='<')))
           state = 0; // separator
-        else      
+        else
           state = 3;
-        break;
+          break;
     }
     newptr++;
   }
-  Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FragDepth", (hardext.fragdepth)?"gl_FragDepthEXT":"fakeFragDepth");
+  Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FragDepth", (hardext.fragdepth)?"gl_FragDepthEXT":"fakeFragDepth");
   // builtin attribs
   if(isVertex) {
+  // ANGLE already has ftransform, so skip it
+#ifndef __APPLE__
       // check for ftransform function
       if(strstr(Tmp, "ftransform(")) {
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_ftransformSource, Tmp, &tmpsize);
+        Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_ftransformSource, Tmp, &tmpsize);
         // don't increment headline count, as all variying and attributes should be created before
       }
+#endif
       // check for builtin OpenGL attributes...
       int n = sizeof(builtin_attrib)/sizeof(builtin_attrib_t);
       for (int i=0; i<n; i++) {
           if(strstr(Tmp, builtin_attrib[i].glname)) {
               // ok, this attribute is used
               // replace gl_name by _gl4es_ one
-              Tmp = gl4es_inplace_replace(Tmp, &tmpsize, builtin_attrib[i].glname, builtin_attrib[i].name);
+              Tmp = InplaceReplace(Tmp, &tmpsize, builtin_attrib[i].glname, builtin_attrib[i].name);
               // insert a declaration of it
               char def[100];
               sprintf(def, "attribute %s %s %s;\n", builtin_attrib[i].prec, builtin_attrib[i].type, builtin_attrib[i].name);
-              Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline++), def, Tmp, &tmpsize);
+              Tmp = InplaceInsert(GetLine(Tmp, headline++), def, Tmp, &tmpsize);
           }
       }
       if(strstr(Tmp, gl_VertexAttrib)) {
         // Generic VA from Old Programs
         for (int i=0; i<MAX_VATTRIB; ++i) {
           char A[100];
-          if(gl4es_find_string(Tmp, gl_VA[i])) {
+          if(FindString(Tmp, gl_VA[i])) {
             sprintf(A, "attribute highp vec4 %s%d;\n", gl4es_VertexAttrib, i);
-            Tmp = gl4es_inplace_replace(Tmp, &tmpsize, gl_VA[i], gl4es_VA[i]);
-            Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline++), A, Tmp, &tmpsize);
+            Tmp = InplaceReplace(Tmp, &tmpsize, gl_VA[i], gl4es_VA[i]);
+            Tmp = InplaceInsert(GetLine(Tmp, headline++), A, Tmp, &tmpsize);
           }
         }
       }
@@ -756,46 +725,46 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   int nvarying = 0;
   if(strstr(Tmp, "gl_Color") || need->need_color) {
     if(need->need_color<1) need->need_color = 1;
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_Color", (need->need_color==1)?"gl_FrontColor":"(gl_FrontFacing?gl_FrontColor:gl_BackColor)");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_Color", (need->need_color==1)?"gl_FrontColor":"(gl_FrontFacing?gl_FrontColor:gl_BackColor)");
   }
   if(strstr(Tmp, "gl_FrontColor") || need->need_color) {
     if(need->need_color<1) need->need_color = 1;
     nvarying+=1;
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_frontColorSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_frontColorSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FrontColor", "_gl4es_FrontColor");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_frontColorSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_frontColorSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FrontColor", "_gl4es_FrontColor");
   }
   if(strstr(Tmp, "gl_BackColor") || (need->need_color==2)) {
     need->need_color = 2;
     nvarying+=1;
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_backColorSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_backColorSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_BackColor", "_gl4es_BackColor");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_backColorSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_backColorSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_BackColor", "_gl4es_BackColor");
   }
   if(strstr(Tmp, "gl_SecondaryColor") || need->need_secondary) {
     if(need->need_secondary<1) need->need_secondary = 1;
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_SecondaryColor", (need->need_secondary==1)?"gl_FrontSecondaryColor":"(gl_FrontFacing?gl_FrontSecondaryColor:gl_BackSecondaryColor)");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_SecondaryColor", (need->need_secondary==1)?"gl_FrontSecondaryColor":"(gl_FrontFacing?gl_FrontSecondaryColor:gl_BackSecondaryColor)");
   }
   if(strstr(Tmp, "gl_FrontSecondaryColor") || need->need_secondary) {
     if(need->need_secondary<1) need->need_secondary = 1;
     nvarying+=1;
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_frontSecondaryColorSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_frontSecondaryColorSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FrontSecondaryColor", "_gl4es_FrontSecondaryColor");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_frontSecondaryColorSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_frontSecondaryColorSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FrontSecondaryColor", "_gl4es_FrontSecondaryColor");
   }
   if(strstr(Tmp, "gl_BackSecondaryColor") || (need->need_secondary==2)) {
     need->need_secondary = 2;
     nvarying+=1;
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_backSecondaryColorSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_backSecondaryColorSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_BackSecondaryColor", "_gl4es_BackSecondaryColor");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_backSecondaryColorSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_backSecondaryColorSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_BackSecondaryColor", "_gl4es_BackSecondaryColor");
   }
   if(strstr(Tmp, "gl_FogFragCoord") || need->need_fogcoord) {
     need->need_fogcoord = 1;
     nvarying+=1;
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_fogcoordSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_fogcoordSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FogFragCoord", "_gl4es_FogFragCoord");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_fogcoordSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_fogcoordSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FogFragCoord", "_gl4es_FogFragCoord");
   }
   // Get the max_texunit and the calc notexarray
   if(strstr(Tmp, "gl_TexCoord") || need->need_texcoord!=-1) {
@@ -810,7 +779,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
         if(p[1]>='0' && p[1]<='9')
           n = n*10 + (p[1] - '0');
         if (ntex<n) ntex = n;
-      } else 
+      } else
         notexarray_ok=0;
     }
     // if failed to determine, take max...
@@ -825,7 +794,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
       notexarray = 1;
       need->need_notexarray = 1;
     }
-    // check constraints
+    // check constaints
     if (!notexarray && ntex+nvarying>hardext.maxvarying) ntex = hardext.maxvarying - nvarying;
     need->need_texcoord = ntex;
     char d[100];
@@ -835,10 +804,10 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
         sprintf(d2, "gl_TexCoord[%d]", k);
         if(strstr(Tmp, d2)) {
           sprintf(d, gl4es_texcoordSourceAlt, k);
-          Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), d, Tmp, &tmpsize);
-          headline+=gl4es_countline(d);
+          Tmp = InplaceInsert(GetLine(Tmp, headline), d, Tmp, &tmpsize);
+          headline+=CountLine(d);
           sprintf(d, "_gl4es_TexCoord_%d", k);
-          Tmp = gl4es_inplace_replace(Tmp, &tmpsize, d2, d);
+          Tmp = InplaceReplace(Tmp, &tmpsize, d2, d);
         }
         // check if texture is there
         sprintf(d2, "_gl4es_TexCoord_%d", k);
@@ -847,9 +816,9 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
       }
     } else {
       sprintf(d, gl4es_texcoordSource, ntex+1);
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), d, Tmp, &tmpsize);
-      headline+=gl4es_countline(d);
-      Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_TexCoord", "_gl4es_TexCoord");
+      Tmp = InplaceInsert(GetLine(Tmp, headline), d, Tmp, &tmpsize);
+      headline+=CountLine(d);
+      Tmp = InplaceReplace(Tmp, &tmpsize, "gl_TexCoord", "_gl4es_TexCoord");
       // set textures as all ntex used
       for (int k=0; k<ntex+1; k++)
         need->need_texs |= (1<<k);
@@ -859,8 +828,8 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   // builtin matrices work
   {
     if(strstr(Tmp, "transpose(") || strstr(Tmp, "transpose ") || strstr(Tmp, "transpose\t")) {
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_transpose, Tmp, &tmpsize);
-      gl4es_inplace_replace(Tmp, &tmpsize, "transpose", "gl4es_transpose");
+      Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_transpose, Tmp, &tmpsize);
+      InplaceReplace(Tmp, &tmpsize, "transpose", "gl4es_transpose");
       // don't increment headline count, as all variying and attributes should be created before
     }
     // check for builtin matrix uniform...
@@ -876,12 +845,12 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
             int n = 0;
             while(*p>='0' && *p<='9')
               n = n*10 + (*(p++) - '0');
-            
+
             if (ntex<n) ntex = n;
           }
         }
       }
-        
+
       // if failed to determine, take max...
       if (ntex==-1) ntex = need->need_texcoord; else ++ntex;
       // change gl_TextureMatrix[X] to gl_TextureMatrix_X if possible
@@ -903,7 +872,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
           sprintf(d2, "gl_TextureMatrix[%d]", k);
           if(strstr(Tmp, d2)) {
             sprintf(d, "gl_TextureMatrix_%d", k);
-            Tmp = gl4es_inplace_replace(Tmp, &tmpsize, d2, d);
+            Tmp = InplaceReplace(Tmp, &tmpsize, d2, d);
           }
         }
       }
@@ -913,7 +882,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
           if(strstr(Tmp, builtin_matrix[i].glname)) {
               // ok, this matrix is used
               // replace gl_name by _gl4es_ one
-              Tmp = gl4es_inplace_replace(Tmp, &tmpsize, builtin_matrix[i].glname, builtin_matrix[i].name);
+              Tmp = InplaceReplace(Tmp, &tmpsize, builtin_matrix[i].glname, builtin_matrix[i].name);
               // insert a declaration of it
               char def[100];
               int ishighp = (isVertex || hardext.highp)?1:0;
@@ -939,7 +908,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
                   sprintf(def, "uniform %s%s %s[%d];\n", (ishighp)?"highp ":"mediump ", builtin_matrix[i].type, builtin_matrix[i].name, ntex);
               else
                   sprintf(def, "uniform %s%s %s;\n", (ishighp)?"highp ":"mediump ", builtin_matrix[i].type, builtin_matrix[i].name);
-              Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline++), def, Tmp, &tmpsize);
+              Tmp = InplaceInsert(GetLine(Tmp, headline++), def, Tmp, &tmpsize);
           }
       }
     }
@@ -951,13 +920,13 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
     while((p=strstr(p, "gl_LightSource["))) {
       char *p2 = strchr(p, ']');
       if (p2 && !strncmp(p2, "].halfVector", strlen("].halfVector"))) {
-        // found an occurrence, lets change
+        // found an occurence, lets change
         char p3[500];
         strncpy(p3,p, (p2-p)+1); p3[(p2-p)+1]='\0';
         char p4[500], p5[500];
         sprintf(p4, "%s.halfVector", p3);
         sprintf(p5, "normalize(normalize(%s.position.xyz) + vec3(0., 0., 1.))", p3);
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, p4, p5);
+        Tmp = InplaceReplace(Tmp, &tmpsize, p4, p5);
         p = Tmp;
       } else
         ++p;
@@ -970,184 +939,179 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
     while((p=strstr(p, "centroid"))!=NULL)
     {
       if(p[8]==' ' || p[8]=='\t') { // what next...
-        const char* p2 = gl4es_get_next_str(p+8);
+        const char* p2 = GetNextStr(p+8);
         if(strcmp(p2, "uniform")==0 || strcmp(p2, "varying")==0) {
           memset(p, ' ', 8);  // erase the keyword...
         }
-      } 
+      }
       p+=8;
     }
   }
-  
+
   // check for builtin OpenGL gl_LightSource & friends
   if(strstr(Tmp, "gl_LightSourceParameters") || strstr(Tmp, "gl_LightSource"))
   {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_LightSourceParametersSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_LightSourceParametersSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_LightSourceParameters", "_gl4es_LightSourceParameters");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_LightSourceParametersSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_LightSourceParametersSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_LightSourceParameters", "_gl4es_LightSourceParameters");
   }
   if(strstr(Tmp, "gl_LightModelParameters") || strstr(Tmp, "gl_LightModel"))
   {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_LightModelParametersSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_LightModelParametersSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_LightModelParameters", "_gl4es_LightModelParameters");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_LightModelParametersSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_LightModelParametersSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_LightModelParameters", "_gl4es_LightModelParameters");
   }
   if(strstr(Tmp, "gl_LightModelProducts") || strstr(Tmp, "gl_FrontLightModelProduct") || strstr(Tmp, "gl_BackLightModelProduct"))
   {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_LightModelProductsSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_LightModelProductsSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_LightModelProducts", "_gl4es_LightModelProducts");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_LightModelProductsSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_LightModelProductsSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_LightModelProducts", "_gl4es_LightModelProducts");
   }
   if(strstr(Tmp, "gl_LightProducts") || strstr(Tmp, "gl_FrontLightProduct") || strstr(Tmp, "gl_BackLightProduct"))
   {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_LightProductsSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_LightProductsSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_LightProducts", "_gl4es_LightProducts");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_LightProductsSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_LightProductsSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_LightProducts", "_gl4es_LightProducts");
   }
   if(strstr(Tmp, "gl_MaterialParameters ") || (strstr(Tmp, "gl_FrontMaterial")) || strstr(Tmp, "gl_BackMaterial"))
   {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_MaterialParametersSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_MaterialParametersSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_MaterialParameters", "_gl4es_MaterialParameters");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_MaterialParametersSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_MaterialParametersSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_MaterialParameters", "_gl4es_MaterialParameters");
   }
   if(strstr(Tmp, "gl_LightSource")) {
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_LightSource", "_gl4es_LightSource");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_LightSource", "_gl4es_LightSource");
   }
   if(strstr(Tmp, "gl_LightModel"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_LightModel", "_gl4es_LightModel");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_LightModel", "_gl4es_LightModel");
   if(strstr(Tmp, "gl_FrontLightModelProduct"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FrontLightModelProduct", "_gl4es_FrontLightModelProduct");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FrontLightModelProduct", "_gl4es_FrontLightModelProduct");
   if(strstr(Tmp, "gl_BackLightModelProduct"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_BackLightModelProduct", "_gl4es_BackLightModelProduct");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_BackLightModelProduct", "_gl4es_BackLightModelProduct");
   if(strstr(Tmp, "gl_FrontLightProduct"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FrontLightProduct", "_gl4es_FrontLightProduct");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FrontLightProduct", "_gl4es_FrontLightProduct");
   if(strstr(Tmp, "gl_BackLightProduct"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_BackLightProduct", "_gl4es_BackLightProduct");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_BackLightProduct", "_gl4es_BackLightProduct");
   if(strstr(Tmp, "gl_FrontMaterial"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FrontMaterial", "_gl4es_FrontMaterial");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FrontMaterial", "_gl4es_FrontMaterial");
   if(strstr(Tmp, "gl_BackMaterial"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_BackMaterial", "_gl4es_BackMaterial");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_BackMaterial", "_gl4es_BackMaterial");
   if(strstr(Tmp, "gl_MaxLights"))
   {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 2), gl4es_MaxLightsSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_MaxLightsSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_MaxLights", "_gl4es_MaxLights");
+    Tmp = InplaceInsert(GetLine(Tmp, 2), gl4es_MaxLightsSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_MaxLightsSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_MaxLights", "_gl4es_MaxLights");
   }
   if(strstr(Tmp, "gl_NormalScale")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_normalscaleSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_normalscaleSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_NormalScale", "_gl4es_NormalScale");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_normalscaleSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_normalscaleSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_NormalScale", "_gl4es_NormalScale");
   }
   if(strstr(Tmp, "gl_InstanceID") || strstr(Tmp, "gl_InstanceIDARB")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_instanceID, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_instanceID);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_InstanceIDARB", "_gl4es_InstanceID");
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_InstanceID", "_gl4es_InstanceID");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_instanceID, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_instanceID);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_InstanceIDARB", "_gl4es_InstanceID");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_InstanceID", "_gl4es_InstanceID");
   }
   if(strstr(Tmp, "gl_ClipPlane")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_clipplanesSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_clipplanesSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_ClipPlane", "_gl4es_ClipPlane");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_clipplanesSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_clipplanesSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_ClipPlane", "_gl4es_ClipPlane");
   }
   if(strstr(Tmp, "gl_MaxClipPlanes")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 2), gl4es_MaxClipPlanesSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_MaxClipPlanesSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_MaxClipPlanes", "_gl4es_MaxClipPlanes");
+    Tmp = InplaceInsert(GetLine(Tmp, 2), gl4es_MaxClipPlanesSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_MaxClipPlanesSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_MaxClipPlanes", "_gl4es_MaxClipPlanes");
   }
 
   if(strstr(Tmp, "gl_PointParameters") || strstr(Tmp, "gl_Point"))
     {
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_PointSpriteSource, Tmp, &tmpsize);
-      headline+=gl4es_countline(gl4es_PointSpriteSource);
-      Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_PointParameters", "_gl4es_PointParameters");
+      Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_PointSpriteSource, Tmp, &tmpsize);
+      headline+=CountLine(gl4es_PointSpriteSource);
+      Tmp = InplaceReplace(Tmp, &tmpsize, "gl_PointParameters", "_gl4es_PointParameters");
     }
   if(strstr(Tmp, "gl_Point"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_Point", "_gl4es_Point");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_Point", "_gl4es_Point");
   if(strstr(Tmp, "gl_FogParameters") || strstr(Tmp, "gl_Fog"))
     {
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), hardext.highp?gl4es_FogParametersSourceHighp:gl4es_FogParametersSource, Tmp, &tmpsize);
-      headline+=gl4es_countline(gl4es_FogParametersSource);
-      Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_FogParameters", "_gl4es_FogParameters");
+      Tmp = InplaceInsert(GetLine(Tmp, headline), hardext.highp?gl4es_FogParametersSourceHighp:gl4es_FogParametersSource, Tmp, &tmpsize);
+      headline+=CountLine(gl4es_FogParametersSource);
+      Tmp = InplaceReplace(Tmp, &tmpsize, "gl_FogParameters", "_gl4es_FogParameters");
     }
   if(strstr(Tmp, "gl_Fog"))
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_Fog", "_gl4es_Fog");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_Fog", "_gl4es_Fog");
   if(strstr(Tmp, "gl_TextureEnvColor")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texenvcolorSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texenvcolorSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_TextureEnvColor", "_gl4es_TextureEnvColor");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texenvcolorSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texenvcolorSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_TextureEnvColor", "_gl4es_TextureEnvColor");
   }
   if(strstr(Tmp, "gl_EyePlaneS")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgeneyeSource[0], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgeneyeSource[0]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_EyePlaneS", "_gl4es_EyePlaneS");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgeneyeSource[0], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgeneyeSource[0]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_EyePlaneS", "_gl4es_EyePlaneS");
   }
   if(strstr(Tmp, "gl_EyePlaneT")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgeneyeSource[1], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgeneyeSource[1]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_EyePlaneT", "_gl4es_EyePlaneT");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgeneyeSource[1], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgeneyeSource[1]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_EyePlaneT", "_gl4es_EyePlaneT");
   }
   if(strstr(Tmp, "gl_EyePlaneR")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgeneyeSource[2], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgeneyeSource[2]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_EyePlaneR", "_gl4es_EyePlaneR");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgeneyeSource[2], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgeneyeSource[2]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_EyePlaneR", "_gl4es_EyePlaneR");
   }
   if(strstr(Tmp, "gl_EyePlaneQ")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgeneyeSource[3], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgeneyeSource[3]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_EyePlaneQ", "_gl4es_EyePlaneQ");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgeneyeSource[3], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgeneyeSource[3]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_EyePlaneQ", "_gl4es_EyePlaneQ");
   }
   if(strstr(Tmp, "gl_ObjectPlaneS")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgenobjSource[0], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgenobjSource[0]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_ObjectPlaneS", "_gl4es_ObjectPlaneS");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgenobjSource[0], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgenobjSource[0]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_ObjectPlaneS", "_gl4es_ObjectPlaneS");
   }
   if(strstr(Tmp, "gl_ObjectPlaneT")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgenobjSource[1], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgenobjSource[1]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_ObjectPlaneT", "_gl4es_ObjectPlaneT");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgenobjSource[1], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgenobjSource[1]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_ObjectPlaneT", "_gl4es_ObjectPlaneT");
   }
   if(strstr(Tmp, "gl_ObjectPlaneR")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgenobjSource[2], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgenobjSource[2]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_ObjectPlaneR", "_gl4es_ObjectPlaneR");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgenobjSource[2], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgenobjSource[2]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_ObjectPlaneR", "_gl4es_ObjectPlaneR");
   }
   if(strstr(Tmp, "gl_ObjectPlaneQ")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), gl4es_texgenobjSource[3], Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_texgenobjSource[3]);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_ObjectPlaneQ", "_gl4es_ObjectPlaneQ");
+    Tmp = InplaceInsert(GetLine(Tmp, headline), gl4es_texgenobjSource[3], Tmp, &tmpsize);
+    headline+=CountLine(gl4es_texgenobjSource[3]);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_ObjectPlaneQ", "_gl4es_ObjectPlaneQ");
   }
 
   if(strstr(Tmp, "gl_MaxTextureUnits")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 2), gl4es_MaxTextureUnitsSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_MaxTextureUnitsSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_MaxTextureUnits", "_gl4es_MaxTextureUnits");
+    Tmp = InplaceInsert(GetLine(Tmp, 2), gl4es_MaxTextureUnitsSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_MaxTextureUnitsSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_MaxTextureUnits", "_gl4es_MaxTextureUnits");
   }
   if(strstr(Tmp, "gl_MaxTextureCoords")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 2), gl4es_MaxTextureCoordsSource, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_MaxTextureCoordsSource);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_MaxTextureCoords", "_gl4es_MaxTextureCoords");
+    Tmp = InplaceInsert(GetLine(Tmp, 2), gl4es_MaxTextureCoordsSource, Tmp, &tmpsize);
+    headline+=CountLine(gl4es_MaxTextureCoordsSource);
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_MaxTextureCoords", "_gl4es_MaxTextureCoords");
   }
   if(strstr(Tmp, "gl_ClipVertex")) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 2), gl4es_ClipVertex, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_ClipVertex);
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "gl_ClipVertex", gl4es_ClipVertexSource);
-    need->need_clipvertex = 1;
-  } else if(isVertex && need && need->need_clipvertex) {
-    Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, 2), gl4es_ClipVertex, Tmp, &tmpsize);
-    headline+=gl4es_countline(gl4es_ClipVertex);
-    char *p = strchr(gl4es_find_string_nc(Tmp, "main"), '{'); // find the openning curly bracket of main
-    if(p) {
-      // add regular clipping at start of main
-      Tmp = gl4es_inplace_insert(p+1, gl4es_ClipVertex_clip, Tmp, &tmpsize);
-    }
+    // gl_ClipVertex is not handled for now
+    // Proper way would be to copy handling from fpe_shader, but then, need to use gl_ClipPlane...
+    static int ncv = 0;
+    char CV[60];
+    sprintf(CV, gl4es_dummyClipVertex, ncv);
+    ++ncv;
+    Tmp = InplaceReplace(Tmp, &tmpsize, "gl_ClipVertex", CV);
   }
   //oldprogram uniforms...
-  if(gl4es_find_string(Tmp, gl_ProgramEnv)) {
+  if(FindString(Tmp, gl_ProgramEnv)) {
     // check if array can be removed
     int maxind = -1;
     int noarray_ok = 1;
     char* p = Tmp;
-    while(noarray_ok && (p=gl4es_find_string_nc(p, gl_ProgramEnv))) {
+    while(noarray_ok && (p=FindStringNC(p, gl_ProgramEnv))) {
       p+=strlen(gl_ProgramEnv);
       if(*p=='[') {
         ++p;
@@ -1156,7 +1120,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
           if(p[1]>='0' && p[1]<='9')
             n = n*10 + (p[1] - '0');
           if (maxind<n) maxind = n;
-        } else 
+        } else
           noarray_ok=0;
       } else
         noarray_ok=0;
@@ -1167,11 +1131,11 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
       for(int i=0; i<=maxind; ++i) {
         sprintf(F, "%s[%d]", gl_ProgramEnv, i);
         sprintf(T, "_gl4es_%s_ProgramEnv_%d", isVertex?"Vertex":"Fragment", i);
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, F, T);
-        if(gl4es_find_string(Tmp, T)) {
+        Tmp = InplaceReplace(Tmp, &tmpsize, F, T);
+        if(FindString(Tmp, T)) {
           // add the uniform declaration if needed
           sprintf(U, "uniform vec4 %s;\n", T);
-          Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), U, Tmp, &tmpsize);
+          Tmp = InplaceInsert(GetLine(Tmp, headline), U, Tmp, &tmpsize);
           headline += 1;
         }
       }
@@ -1180,17 +1144,17 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
       char T[60], U[300];
       sprintf(T, "_gl4es_%s_ProgramEnv", isVertex?"Vertex":"Fragment");
       sprintf(U, "uniform vec4 %s[%d];\n", T, isVertex?MAX_VTX_PROG_ENV_PARAMS:MAX_FRG_PROG_ENV_PARAMS);
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), U, Tmp, &tmpsize);
+      Tmp = InplaceInsert(GetLine(Tmp, headline), U, Tmp, &tmpsize);
       headline += 1;
-      Tmp = gl4es_inplace_replace(Tmp, &tmpsize, gl_ProgramEnv, T);
+      Tmp = InplaceReplace(Tmp, &tmpsize, gl_ProgramEnv, T);
     }
   }
-  if(gl4es_find_string(Tmp, gl_ProgramLocal)) {
+  if(FindString(Tmp, gl_ProgramLocal)) {
     // check if array can be removed
     int maxind = -1;
     int noarray_ok = 1;
     char* p = Tmp;
-    while(noarray_ok && (p=gl4es_find_string_nc(p, gl_ProgramLocal))) {
+    while(noarray_ok && (p=FindStringNC(p, gl_ProgramLocal))) {
       p+=strlen(gl_ProgramLocal);
       if(*p=='[') {
         ++p;
@@ -1199,7 +1163,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
           if(p[1]>='0' && p[1]<='9')
             n = n*10 + (p[1] - '0');
           if (maxind<n) maxind = n;
-        } else 
+        } else
           noarray_ok=0;
       } else
         noarray_ok=0;
@@ -1210,11 +1174,11 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
       for(int i=0; i<=maxind; ++i) {
         sprintf(F, "%s[%d]", gl_ProgramLocal, i);
         sprintf(T, "_gl4es_%s_ProgramLocal_%d", isVertex?"Vertex":"Fragment", i);
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, F, T);
-        if(gl4es_find_string(Tmp, T)) {
+        Tmp = InplaceReplace(Tmp, &tmpsize, F, T);
+        if(FindString(Tmp, T)) {
           // add the uniform declaration if needed
           sprintf(U, "uniform vec4 %s;\n", T);
-          Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), U, Tmp, &tmpsize);
+          Tmp = InplaceInsert(GetLine(Tmp, headline), U, Tmp, &tmpsize);
           headline += 1;
         }
       }
@@ -1223,9 +1187,9 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
       char T[60], U[300];
       sprintf(T, "_gl4es_%s_ProgramLocal", isVertex?"Vertex":"Fragment");
       sprintf(U, "uniform vec4 %s[%d];\n", T, isVertex?MAX_VTX_PROG_LOC_PARAMS:MAX_FRG_PROG_LOC_PARAMS);
-      Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), U, Tmp, &tmpsize);
+      Tmp = InplaceInsert(GetLine(Tmp, headline), U, Tmp, &tmpsize);
       headline += 1;
-      Tmp = gl4es_inplace_replace(Tmp, &tmpsize, gl_ProgramLocal, T);
+      Tmp = InplaceReplace(Tmp, &tmpsize, gl_ProgramLocal, T);
     }
   }
   #define GO(A) \
@@ -1233,11 +1197,11 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
     char S[60], D[60], U[60];                                           \
     for(int i=0; i<MAX_TEX; ++i) {                                      \
       sprintf(S, "%s%d", gl_Samplers ## A, i);                          \
-      if(gl4es_find_string(Tmp, S)) {                                          \
+      if(FindString(Tmp, S)) {                                          \
         sprintf(D, "%s%d", gl4es_Samplers ## A, i);                     \
         sprintf(U, "%s%d;\n", gl4es_Samplers ## A ## _uniform, i);      \
-        Tmp = gl4es_inplace_replace(Tmp, &tmpsize, S, D);                      \
-        Tmp = gl4es_inplace_insert(gl4es_getline(Tmp, headline), U, Tmp, &tmpsize);  \
+        Tmp = InplaceReplace(Tmp, &tmpsize, S, D);                      \
+        Tmp = InplaceInsert(GetLine(Tmp, headline), U, Tmp, &tmpsize);  \
         headline += 1;                                                  \
       }                                                                 \
     }                                                                   \
@@ -1252,20 +1216,26 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need)
   // the square one first
   if(strstr(Tmp, "mat2x2")) {
     // better to use #define ?
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "mat2x2", "mat2");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "mat2x2", "mat2");
   }
   if(strstr(Tmp, "mat3x3")) {
     // better to use #define ?
-    Tmp = gl4es_inplace_replace(Tmp, &tmpsize, "mat3x3", "mat3");
+    Tmp = InplaceReplace(Tmp, &tmpsize, "mat3x3", "mat3");
   }
-  
+
+  if (versionHeader > 1) {
+    const char* GLESBackport = "#define texture2D texture\n#define attribute in\n#define varying out\n";
+    Tmp = InplaceInsert(GetLine(Tmp, 1), GLESBackport, Tmp, &tmpsize);
+  }else {
+      const char* GLESForwardPort = "#define texture texture2D\n #define textureProj texture2DProj\n #define mod(a,b) (int(a) - int(b) * int(a/b))\n";
+      Tmp = InplaceInsert(GetLine(Tmp, 1), GLESForwardPort, Tmp, &tmpsize);
+  }
+
   // finish
   if((globals4es.dbgshaderconv&maskafter)==maskafter) {
     printf("New Shader source:\n%s\n", Tmp);
   }
   // clean preproc'd source
-  if(versionString != NULL)
-    free(versionString);
   if(pEntry!=pBuffer)
     free(pBuffer);
   return Tmp;
@@ -1286,7 +1256,7 @@ int isBuiltinMatrix(const char* name) {
     for (int i=0; i<n && ret==-1; i++) {
         if (strncmp(builtin_matrix[i].name, name, strlen(builtin_matrix[i].name))==0) {
             int l=strlen(builtin_matrix[i].name);
-            if(strlen(name)==l 
+            if(strlen(name)==l
             || (strlen(name)==l+3 && name[l]=='[' && builtin_matrix[i].texarray)
             || (strlen(name)==l+4 && name[l]=='[' && builtin_matrix[i].texarray)
             ) {
