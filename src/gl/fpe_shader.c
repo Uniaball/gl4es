@@ -722,7 +722,7 @@ const char* const* fpe_VertexShader(shaderconv_need_t* need, fpe_state_t *state)
         if(need_vertex==1)
             strcat(buff, "vec4 ");
         strcat(buff, "vertex = gl_ModelViewMatrix * gl_Vertex;\n");
-        shad = InplaceInsert(Getline(shad, normal_line + headers), buff, shad, &shad_cap);
+        shad = InplaceInsert(GetLine(shad, normal_line + headers), buff, shad, &shad_cap);
         normal_line += Countline(buff);
     }
     if(need_normal) {
@@ -741,7 +741,7 @@ const char* const* fpe_VertexShader(shaderconv_need_t* need, fpe_state_t *state)
             //strcpy(buff, "vec3 normal = (vec4(gl_Normal, (gl_Vertex.w==0.0)?0.0:(-dot(gl_Normal, gl_Vertex.xyz)/gl_Vertex.w))*gl_ModelViewMatrixInverse).xyz;\n");
             strcpy(buff, "vec3 normal = gl_NormalMatrix * gl_Normal;\n");
 #endif
-        shad = InplaceInsert(Getline(shad, normal_line + headers), buff, shad, &shad_cap);
+        shad = InplaceInsert(GetLine(shad, normal_line + headers), buff, shad, &shad_cap);
     }
     buff[0] = '\0';
     for (int i=0; i<MAX_TEX; i++) {
@@ -762,7 +762,7 @@ const char* const* fpe_VertexShader(shaderconv_need_t* need, fpe_state_t *state)
         }
     }
     if(buff[0]!='\0') {
-        shad = InplaceInsert(Getline(shad, headers), buff, shad, &shad_cap);
+        shad = InplaceInsert(GetLine(shad, headers), buff, shad, &shad_cap);
         headers += Countline(buff);
     }
     if(fog) {
@@ -1029,7 +1029,7 @@ const char* const* fpe_FragmentShader(shaderconv_need_t* need, fpe_state_t *stat
                     case FPE_BLEND:
                         // create the Uniform for TexEnv Constant color
                         sprintf(buff, "uniform lowp vec4 _gl4es_TextureEnvColor_%d;\n", i);
-                        shad = InplaceInsert(Getline(shad, headers), buff, shad, &shad_cap);
+                        shad = InplaceInsert(GetLine(shad, headers), buff, shad, &shad_cap);
                         headers+=Countline(buff);
                         needclamp=0;
                         if(texformat!=FPE_TEX_ALPHA) {
@@ -1140,7 +1140,7 @@ const char* const* fpe_FragmentShader(shaderconv_need_t* need, fpe_state_t *stat
                             if(constant) {
                                 // yep, create the Uniform
                                 sprintf(buff, "uniform lowp vec4 _gl4es_TextureEnvColor_%d;\n", i);
-                                shad = InplaceInsert(Getline(shad, headers), buff, shad, &shad_cap);
+                                shad = InplaceInsert(GetLine(shad, headers), buff, shad, &shad_cap);
                                 headers+=Countline(buff);                            
                             }
                             for (int j=0; j<4; j++) {
@@ -1633,7 +1633,7 @@ const char* const* fpe_CustomVertexShader(const char* initial, fpe_state_t* stat
     char buff[1024];
     if(!shad_cap) shad_cap = 1024;
     if(!shad) shad = (char*)malloc(shad_cap);
-    int headline = gl4es_getline_for(initial, "main");
+    int headline = gl4es_GetLine_for(initial, "main");
     if(headline) --headline;
 
     strcpy(shad, "");
@@ -1702,7 +1702,7 @@ const char* const* fpe_CustomFragmentShader(const char* initial, fpe_state_t* st
     int alpha_func = state->alphafunc;
     int shaderblend = state->blend_enable;
     char buff[1024];
-    int headline = gl4es_getline_for(initial, "main");
+    int headline = gl4es_GetLine_for(initial, "main");
     if(headline) --headline;
 
     strcpy(shad, "");
@@ -1734,8 +1734,8 @@ const char* const* fpe_CustomFragmentShader(const char* initial, fpe_state_t* st
         // wrap real main...
         shad = InplaceReplace(shad, &shad_cap, "main", "_gl4es_main");
         if(is_fragcolor) {
-            int l_main = gl4es_getline_for(shad, gl4es_prev_str(shad, strstr(shad, "_gl4es_main"))) - 1;
-            shad = InplaceInsert(Getline(shad, l_main), "lowp vec4 _gl4es_FragColor;\n", shad, &shad_cap);
+            int l_main = gl4es_GetLine_for(shad, gl4es_prev_str(shad, strstr(shad, "_gl4es_main"))) - 1;
+            shad = InplaceInsert(GetLine(shad, l_main), "lowp vec4 _gl4es_FragColor;\n", shad, &shad_cap);
             shad = InplaceReplace(shad, &shad_cap, "gl_FragColor", "_gl4es_FragColor");
         }
     }
@@ -1760,7 +1760,7 @@ const char* const* fpe_CustomFragmentShader(const char* initial, fpe_state_t* st
         //*** Alpha Test
         if(alpha_test) {
             if(alpha_test && alpha_func>FPE_NEVER) {
-                shad = InplaceInsert(Getline(shad, headline), gl4es_alphaRefSource, shad, &shad_cap);
+                shad = InplaceInsert(GetLine(shad, headline), gl4es_alphaRefSource, shad, &shad_cap);
                 headline+=Countline(gl4es_alphaRefSource);
             } 
             if(comments) {
