@@ -498,7 +498,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
   //sprintf(GLESFullHeader, GLESHeader, (wanthighp && hardext.highp==1 && !isVertex)?GLESUseFragHighp:"", (wanthighp)?"highp":"mediump", (wanthighp)?"highp":"mediump");
   sprintf(GLESFullHeader, GLESHeader[versionHeader], "", (wanthighp)?"highp":"mediump", (wanthighp)?"highp":"mediump");
 
-  size_t tmpsize = strlen(pBuffer)*2+strlen(GLESFullHeader)+100;
+  int tmpsize = strlen(pBuffer)*2+strlen(GLESFullHeader)+100;
   char* Tmp = (char*)calloc(1, tmpsize);
   strcpy(Tmp, pBuffer);
 
@@ -1112,7 +1112,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
     int maxind = -1;
     int noarray_ok = 1;
     char* p = Tmp;
-    while(noarray_ok && (p=FindStringNC(p, gl_ProgramEnv))) {
+    while(noarray_ok && (p=gl4es_find_string_nc(p, gl_ProgramEnv))) {
       p+=strlen(gl_ProgramEnv);
       if(*p=='[') {
         ++p;
@@ -1155,7 +1155,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
     int maxind = -1;
     int noarray_ok = 1;
     char* p = Tmp;
-    while(noarray_ok && (p=FindStringNC(p, gl_ProgramLocal))) {
+    while(noarray_ok && (p=gl4es_find_string_nc(p, gl_ProgramLocal))) {
       p+=strlen(gl_ProgramLocal);
       if(*p=='[') {
         ++p;
