@@ -11,11 +11,6 @@
 #include "logs.h"
 
 
-
-char* InplaceReplace(char* buffer, size_t* size, const char* search, const char* replace);
-char* InplaceInsert(char* buffer, const char* insert, char* pos, size_t* size);
-char* GetLine(char* buffer, int line);
-
 typedef struct {
     const char* glname;
     const char* name;
@@ -503,7 +498,7 @@ char* ConvertShader(const char* pEntry, int isVertex, shaderconv_need_t *need, i
   //sprintf(GLESFullHeader, GLESHeader, (wanthighp && hardext.highp==1 && !isVertex)?GLESUseFragHighp:"", (wanthighp)?"highp":"mediump", (wanthighp)?"highp":"mediump");
   sprintf(GLESFullHeader, GLESHeader[versionHeader], "", (wanthighp)?"highp":"mediump", (wanthighp)?"highp":"mediump");
 
-  int tmpsize = strlen(pBuffer)*2+strlen(GLESFullHeader)+100;
+  size_t tmpsize = strlen(pBuffer)*2+strlen(GLESFullHeader)+100;
   char* Tmp = (char*)calloc(1, tmpsize);
   strcpy(Tmp, pBuffer);
 
