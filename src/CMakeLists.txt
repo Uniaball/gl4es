@@ -135,6 +135,11 @@ SET(GL_H
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/gl4es.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/gles.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/stub.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/glsl/glsl_for_es.h
+)
+
+SET(GL_CPP_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}glsl/glsl_for_es.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" AND NOT NO_LOADER)
@@ -241,7 +246,6 @@ SET(EGL_SRC
 SET(EGL_H
     ${CMAKE_CURRENT_SOURCE_DIR}/egl/egl.h
 )
-
 if(EGL_WRAPPER)
     add_library(EGL SHARED ${EGL_SRC})
     target_link_libraries(EGL GL dl)
