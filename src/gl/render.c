@@ -21,9 +21,9 @@ void push_hit() {
             if(tocopy>0)
                 glstate->selectbuf.buffer[glstate->selectbuf.pos+0] = glstate->namestack.top;
             if(tocopy>1)
-                glstate->selectbuf.buffer[glstate->selectbuf.pos+1] = (unsigned int)(glstate->selectbuf.zmin * INT_MAX );
+                glstate->selectbuf.buffer[glstate->selectbuf.pos+1] = (unsigned int)(glstate->selectbuf.zmin * 2147483647.0f );
             if(tocopy>2)
-                glstate->selectbuf.buffer[glstate->selectbuf.pos+2] = (unsigned int)(glstate->selectbuf.zmax * INT_MAX );
+                glstate->selectbuf.buffer[glstate->selectbuf.pos+2] = (unsigned int)(glstate->selectbuf.zmax * 2147483647.0f );
             if(tocopy>3)
                 memcpy(glstate->selectbuf.buffer + glstate->selectbuf.pos + 3, glstate->namestack.names, (tocopy-3) * sizeof(GLuint));
 
