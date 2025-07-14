@@ -864,8 +864,8 @@ void APIENTRY_GL4ES gl4es_glGetIntegerv(GLenum pname, GLint *params) {
                 params[dummy]=glstate->pointsprite.distance[dummy];
             break;
         case GL_DEPTH_RANGE:
-            params[0] = glstate->depth.Near*2147483647l;
-            params[1] = glstate->depth.Far*2147483647l;
+            params[0] = glstate->depth.Near * 2147483647.0f;
+            params[1] = glstate->depth.Far * 2147483647.0f;
             break;
         default:
             errorGL();
