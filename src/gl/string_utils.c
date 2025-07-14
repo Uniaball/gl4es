@@ -8,7 +8,7 @@ const char* AllSeparators = " \t\n\r.,;()[]{}-<>+*/%&\\\"'^$=!:?";
 
 char* gl4es_resize_if_needed(char* pBuffer, int *size, int addsize);
 
-char* gl4es_inplace_replace(char* pBuffer, int* size, const char* S, const char* D)
+char* InplaceReplace(char* pBuffer, int* size, const char* S, const char* D)
 {
     int lS = strlen(S), lD = strlen(D);
     pBuffer = gl4es_resize_if_needed(pBuffer, size, (lD-lS)*gl4es_count_string(pBuffer, S));
@@ -30,7 +30,7 @@ char* gl4es_inplace_replace(char* pBuffer, int* size, const char* S, const char*
     return pBuffer;
 }
 
-char* gl4es_inplace_insert(char* pBuffer, const char* S, char* master, int* size)
+char* InplaceInsert(char* pBuffer, const char* S, char* master, int* size)
 {
     char* m = gl4es_resize_if_needed(master, size, strlen(S));
     if(m!=master) {
@@ -45,14 +45,14 @@ char* gl4es_inplace_insert(char* pBuffer, const char* S, char* master, int* size
     return master;
 }
 
-char* gl4es_getline(char* pBuffer, int num)
+char* GetLine(char* pBuffer, int num)
 {
     char *p = pBuffer;
     while(num-- && (p=strstr(p, "\n"))) p+=strlen("\n");
     return (p)?p:pBuffer;
 }
 
-int gl4es_countline(const char* pBuffer)
+int CountLine(const char* pBuffer)
 {
     int n=0;
     const char* p = pBuffer;
@@ -199,7 +199,7 @@ char* gl4es_next_line(char* pBuffer) {
     return pBuffer;
 }
 
-const char* gl4es_get_next_str(char* pBuffer) {
+const char* GetNextStr(char* pBuffer) {
     static char buff[100] = {0};
     buff[0] = '\0';
     if(!pBuffer) return NULL;
