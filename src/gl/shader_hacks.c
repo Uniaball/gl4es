@@ -530,7 +530,7 @@ static char* ShaderHacks_2_1(char* shader, char* Tmp, int* tmpsize, int i)
     // ok, instance found, insert main line...
     if(Tmp==shader) {Tmp = (char*)malloc(*tmpsize); strcpy(Tmp, shader); m = strstr(Tmp, gl4es_sign_2_main);}   // hacking!
     m += strlen(gl4es_sign_2_main);
-    Tmp = gl4es_inplace_insert(m, gl4es_hacks_2_2[i], Tmp, tmpsize);
+    Tmp = InplaceInsert(m, gl4es_hacks_2_2[i], Tmp, tmpsize);
     Tmp = gl4es_inplace_replace_simple(Tmp, tmpsize, gl4es_sign_2[i], gl4es_hacks_2_1[i]);
     return Tmp;
 }
