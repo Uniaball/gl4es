@@ -67,7 +67,7 @@ int gl4es_getline_for(const char* pBuffer, const char* S)
 {
     int n=0;
     const char* p = pBuffer;
-    const char* end = gl4es_find_string(pBuffer, S);
+    const char* end = FindString(pBuffer, S);
     if(!end)
         return 0;
     while((p=strstr(p, "\n"))) {
@@ -95,7 +95,7 @@ int gl4es_count_string(const char* pBuffer, const char* S)
     return n;
 }
 
-const char* gl4es_find_string(const char* pBuffer, const char* S)
+const char* FindString(const char* pBuffer, const char* S)
 {
     const char* p = pBuffer;
     int lS = strlen(S);
