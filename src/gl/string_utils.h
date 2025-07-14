@@ -11,7 +11,7 @@ char* InplaceReplace(char* pBuffer, int* size, const char* S, const char* D);
 char* gl4es_append(char* pBuffer, int* size, const char* S);
 char* InplaceInsert(char* pBuffer, const char* S, char* master, int* size);
 char* GetLine(char* pBuffer, int num);
-int Countline(const char* pBuffer);
+int CountLine(const char* pBuffer);
 int gl4es_getline_for(const char* pBuffer, const char* S); // get the line number for 1st occurent of S in pBuffer
 char* gl4es_str_next(char *pBuffer, const char* S); // mostly as strstr, but go after the substring if found
 //"blank" (space, tab, cr, lf,":", ",", ";", ".", "/")
