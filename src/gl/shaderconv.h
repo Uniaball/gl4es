@@ -5,7 +5,6 @@
 #include "program.h"
 
 char * ConvertShaderConditionally(struct shader_s * shader_source);
-char* process_uniform_declarations(char* result, char*** uniforms, int* count);
 char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need, int forwardPort);
 
 int isBuiltinAttrib(const char* name);
