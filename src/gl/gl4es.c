@@ -17,6 +17,7 @@
 #include "loader.h"
 #include "matrix.h"
 #include "buffers.h"
+#include <ctype.h>
 #ifdef _WIN32
 #ifdef _WINBASE_
 #define GSM_CAST(c) ((LPFILETIME)c)
