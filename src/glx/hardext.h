@@ -2,6 +2,7 @@
 #define _GLX_HARDEXT_H_
 
 #include "../gl/attributes.h"
+#include "../gl/shader.h"
 
 #define VEND_IMGTEC     0x0100
 #define VEND_ARM        0x0200
@@ -75,6 +76,7 @@ typedef struct _hardext {
 } hardext_t;
 
 EXPORT extern hardext_t hardext;
+int testGenericShader(struct shader_s* shader_source);
 
 EXPORT void GetHardwareExtensions(int test);
 
