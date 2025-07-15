@@ -6,14 +6,6 @@
 
 const char* AllSeparators = " \t\n\r.,;()[]{}-<>+*/%&\\\"'^$=!:?";
 
-int isDigit(char value) {
-     return (value >= '0' && value <= '9');
-}
-
-int isValidFunctionName(char value){
-     return ((value >= 'a' && value <= 'z') || (value >= 'A' && value <= 'Z') || (value == '_'));
-}
-
 char * InplaceReplaceByIndex(char* pBuffer, int* size, const int startIndex, const int endIndex, const char* replacement)
 {
     //SHUT_LOGD("BY INDEX: %s", replacement);
