@@ -8,6 +8,7 @@
 #include "loader.h"
 #include "shaderconv.h"
 #include "../glsl/glsl_for_es.h"
+#include "../glsl/glsl_for_es.cpp"
 
 #define DEBUG
 #ifdef DEBUG
