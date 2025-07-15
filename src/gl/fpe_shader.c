@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "logs.h"
 #include "string_utils.h"
 #include "init.h"
 #include "../glx/hardext.h"
