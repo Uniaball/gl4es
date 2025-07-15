@@ -107,7 +107,7 @@ set(SRC_FILES ${CPP_SRC_FILES} ${C_SRC_FILES})
 
 find_library(GLSLANG_LIB glslang PATHS ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/)
 
-add_library(gl4es LANGUAGES C SHARED ${SRC_FILES})
+add_library(gl4es SHARED ${SRC_FILES})
 
 target_link_libraries(gl4es
         ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/libglslang.a
