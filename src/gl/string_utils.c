@@ -6,7 +6,7 @@
 
 const char* AllSeparators = " \t\n\r.,;()[]{}-<>+*/%&\\\"'^$=!:?";
 
-char* InplaceReplace(char* pBuffer, int* size, const char* S, const char* D)
+char* InplaceReplace(char* pBuffer, int* size, const char* S, const char* D) {
     return pBuffer;
 }
 
