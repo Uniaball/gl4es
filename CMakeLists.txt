@@ -10,11 +10,11 @@ set(CMAKE_C_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -funwind-tables -g -D_THREAD_SAFE -fPIC -stdlib=libc++")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNOX11 -fPIC -DNO_GBM -DDEFAULT_ES=3 -g -funwind-tables -O3 -fvisibility=hidden")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DANDROID -Wno-pointer-sign -Wno-macro-redefined -Wno-dangling-else -Wno-pointer-sign -Wno-implicit-const-int-float-conversion -DNOX11 -fPIC -DNO_GBM -DDEFAULT_ES=3 -g -funwind-tables -O3 -fvisibility=hidden")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 
-set(CMAKE_ANDROID_STL_TYPE c++_static)
+set(CMAKE_ANDROID_STL_TYPE none)
 
 set(CMAKE_BUILD_TYPE Release)
 
@@ -112,6 +112,7 @@ target_link_libraries(gl4es
         ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/libspirv-cross-c-shared.so
         c
         c++_static
+        c++abi
         dl
         )
 
