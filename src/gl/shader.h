@@ -51,7 +51,7 @@ struct shader_s {
     shaderconv_need_t  need;    // the varying need / provide of the shader
     uniforms_declarations uniforms_declarations;
     char*                 before_patch;
-} shader_t; // shader_t defined in oldprogram.h
+}; // shader_t defined in oldprogram.h
 
 KHASH_MAP_DECLARE_INT(shaderlist, struct shader_s *);
 
