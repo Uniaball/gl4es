@@ -17,6 +17,8 @@
 
 #define DBG(d)
 
+#define GL_COMPUTE_SHADER                 0x91B9
+
 typedef std::vector<uint32_t> Spirv;
 
 static TBuiltInResource InitResources()
