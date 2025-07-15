@@ -7,8 +7,9 @@
 #include "glstate.h"
 #include "loader.h"
 #include "shaderconv.h"
+#include "../glsl/glsl_for_es.h"
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #define DBG(a) a
 #else
@@ -18,10 +19,10 @@
 KHASH_MAP_IMPL_INT(shaderlist, shader_t *);
 
 GLuint APIENTRY_GL4ES gl4es_glCreateShader(GLenum shaderType) {
-    DBG(printf("glCreateShader(%s)\n", PrintEnum(shaderType));)
+    DBG(SHUT_LOGD("glCreateShader(%s)\n", PrintEnum(shaderType)))
     // sanity check
     if (shaderType!=GL_VERTEX_SHADER && shaderType!=GL_FRAGMENT_SHADER) {
-        DBG(printf("Invalid shader type\n");)
+        DBG(SHUT_LOGD("Invalid shader type\n"))
         errorShim(GL_INVALID_ENUM);
         return 0;
     }
@@ -32,7 +33,7 @@ GLuint APIENTRY_GL4ES gl4es_glCreateShader(GLenum shaderType) {
     if(gles_glCreateShader) {
         shader = gles_glCreateShader(shaderType);
         if(!shader) {
-            DBG(printf("Failed to create shader\n");)
+            DBG(SHUT_LOGD("Failed to create shader\n"))
             errorGL();
             return 0;
         }
@@ -88,12 +89,12 @@ void actually_detachshader(GLuint shader) {
     if (k != kh_end(shaders)) {
         shader_t *glshader = kh_value(shaders, k);
         if((--glshader->attached)<1 && glshader->deleted)
-            actually_deleteshader(shader); 
+            actually_deleteshader(shader);
     }
 }
 
 void APIENTRY_GL4ES gl4es_glDeleteShader(GLuint shader) {
-    DBG(printf("glDeleteShader(%d)\n", shader);)
+    DBG(SHUT_LOGD("glDeleteShader(%d)\n", shader))
     // sanity check...
     CHECK_SHADER(void, shader)
     // delete the shader from the list
@@ -111,12 +112,12 @@ void APIENTRY_GL4ES gl4es_glDeleteShader(GLuint shader) {
         if(gles_glDeleteShader) {
             errorGL();
             gles_glDeleteShader(shader);
-        }   
+        }
     }
 }
 
 void APIENTRY_GL4ES gl4es_glCompileShader(GLuint shader) {
-    DBG(printf("glCompileShader(%d)\n", shader);)
+    DBG(SHUT_LOGD("glCompileShader(%d)\n", shader))
     // look for the shader
     CHECK_SHADER(void, shader)
 
@@ -125,27 +126,55 @@ void APIENTRY_GL4ES gl4es_glCompileShader(GLuint shader) {
     if(gles_glCompileShader) {
         gles_glCompileShader(glshader->id);
         errorGL();
-        if(globals4es.logshader) {
-            // get compile status and print shaders sources if compile fail...
+        //if(globals4es.logshader) {
+		{ // always log the error of shader
+ 		    // get compile status and print shaders sources if compile fail...
             LOAD_GLES2(glGetShaderiv);
             LOAD_GLES2(glGetShaderInfoLog);
             GLint status = 0;
             gles_glGetShaderiv(glshader->id, GL_COMPILE_STATUS, &status);
             if(status!=GL_TRUE) {
-                printf("LIBGL: Error while compiling shader %d. Original source is:\n%s\n=======\n", glshader->id, glshader->source);
-                printf("ShaderConv Source is:\n%s\n=======\n", glshader->converted);
+                SHUT_LOGD("LIBGL: Error while compiling shader %d. Original source is:\n%s\n=======\n", glshader->id, glshader->source);
+                SHUT_LOGD("ShaderConv Source is:\n%s\n=======\n", glshader->converted);
                 char tmp[500];
                 GLint length;
                 gles_glGetShaderInfoLog(glshader->id, 500, &length, tmp);
-                printf("Compiler message is\n%s\nLIBGL: End of Error log\n", tmp);
+                SHUT_LOGD("Compiler message is\n%s\nLIBGL: End of Error log\n", tmp);
             }
         }
     } else
         noerrorShim();
 }
 
+bool can_run_essl3(int esversion, const char *glsl) {
+    int glsl_version = 0;
+    if (strncmp(glsl, "#version 100", 12) == 0) {
+        return true;
+    } else if (strncmp(glsl, "#version 300 es", 15) == 0) {
+        return true;
+    } else if (strncmp(glsl, "#version 310 es", 15) == 0) {
+        glsl_version = 310;
+    } else if (strncmp(glsl, "#version 320 es", 15) == 0) {
+        glsl_version = 320;
+    } else {
+        return false;
+    }
+    if (esversion >= glsl_version) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool is_direct_shader(char *glsl)
+{
+    bool es2_ability = glstate->glsl->es2 && !strncmp(glsl, "#version 100", 12);
+    bool es3_ability = can_run_essl3(320, glsl);
+    return es2_ability || es3_ability;
+}
+
 void APIENTRY_GL4ES gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *string, const GLint *length) {
-    DBG(printf("glShaderSource(%d, %d, %p, %p)\n", shader, count, string, length);)
+    DBG(SHUT_LOGD("glShaderSource(%d, %d, %p, %p)\n", shader, count, string, length))
     // sanity check
     if(count<=0) {
         errorShim(GL_INVALID_VALUE);
@@ -172,24 +201,24 @@ void APIENTRY_GL4ES gl4es_glShaderSource(GLuint shader, GLsizei count, const GLc
     LOAD_GLES2(glShaderSource);
     if (gles_glShaderSource) {
         // adapt shader if needed (i.e. not an es2 context and shader is not #version 100)
-        if(is_direct_shader(glshader->source))
+		if(is_direct_shader(glshader->source))
 			glshader->converted = strdup(glshader->source);
         else {
             int glsl_version = getGLSLVersion(glshader->source);
             DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "))
             DBG(SHUT_LOGD("%s", glshader->source))
-            if(glsl_version < 140 || globals4es.esversion < 300) {
+            if(glsl_version < 140) {
                 glshader->converted = strdup(ConvertShaderConditionally(glshader));
                 glshader->is_converted_essl_320 = 0;
             }
             else {
-                char* result = GLSLtoGLSLES(glshader->source, glshader->type, globals4es.esversion);
+                char* result = GLSLtoGLSLES(glshader->source, glshader->type, 320);
                 glshader->converted = strdup(result!=NULL?process_uniform_declarations(result, glshader->uniforms_declarations, &glshader->uniforms_declarations_count):ConvertShaderConditionally(glshader));
                 glshader->is_converted_essl_320 = 1;
             }
             DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
         }
-        // send source to GLES2 hardware if any
+		// send source to GLES2 hardware if any
         gles_glShaderSource(shader, 1, (const GLchar * const*)((glshader->converted)?(&glshader->converted):(&glshader->source)), NULL);
         errorGL();
     } else
@@ -211,7 +240,7 @@ void APIENTRY_GL4ES gl4es_glShaderSource(GLuint shader, GLsizei count, const GLc
 
 void accumShaderNeeds(GLuint shader, shaderconv_need_t *need) {
     CHECK_SHADER(void, shader)
-    if(!glshader->converted) 
+    if(!glshader->converted)
         return;
     #define GO(A) if(need->need_##A < glshader->need.need_##A) need->need_##A = glshader->need.need_##A;
     #define GO2(A) need->need_##A |= glshader->need.need_##A;
@@ -244,15 +273,31 @@ void redoShader(GLuint shader, shaderconv_need_t *need) {
         return;
     free(glshader->converted);
     memcpy(&glshader->need, need, sizeof(shaderconv_need_t));
-    glshader->converted = ConvertShader(glshader->source, glshader->type==GL_VERTEX_SHADER?1:0, &glshader->need, 0);
-    // send source to GLES2 hardware if any
+	if(is_direct_shader(glshader->source))
+		glshader->converted = strdup(glshader->source);
+    else {
+        int glsl_version = getGLSLVersion(glshader->source);
+        DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "))
+        DBG(SHUT_LOGD("%s", glshader->source))
+        if(glsl_version < 140) {
+            glshader->converted = strdup(ConvertShaderConditionally(glshader));
+            glshader->is_converted_essl_320 = 0;
+        }
+        else {
+            char* result = GLSLtoGLSLES(glshader->source, glshader->type, 320);
+            glshader->converted = strdup(result!=NULL?process_uniform_declarations(result, glshader->uniforms_declarations, &glshader->uniforms_declarations_count):ConvertShaderConditionally(glshader));
+            glshader->is_converted_essl_320 = 1;
+        }
+        DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
+    }
+	// send source to GLES2 hardware if any
     gles_glShaderSource(shader, 1, (const GLchar * const*)((glshader->converted)?(&glshader->converted):(&glshader->source)), NULL);
     // recompile...
     gl4es_glCompileShader(glshader->id);
 }
 
 void APIENTRY_GL4ES gl4es_glGetShaderSource(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source) {
-    DBG(printf("glGetShaderSource(%d, %d, %p, %p)\n", shader, bufSize, length, source);)
+    DBG(SHUT_LOGD("glGetShaderSource(%d, %d, %p, %p)\n", shader, bufSize, length, source))
     // find shader
     CHECK_SHADER(void, shader)
     if (bufSize<=0) {
@@ -276,7 +321,7 @@ void APIENTRY_GL4ES gl4es_glGetShaderSource(GLuint shader, GLsizei bufSize, GLsi
 }
 
 GLboolean APIENTRY_GL4ES gl4es_glIsShader(GLuint shader) {
-    DBG(printf("glIsShader(%d)\n", shader);)
+    DBG(SHUT_LOGD("glIsShader(%d)\n", shader))
     // find shader
     shader_t *glshader = NULL;
     khint_t k;
@@ -303,7 +348,7 @@ shader_t *getShader(GLuint shader) {
 static const char* GLES_NoGLSLSupport = "No Shader support with current backend";
 
 void APIENTRY_GL4ES gl4es_glGetShaderInfoLog(GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog) {
-    DBG(printf("glGetShaderInfoLog(%d, %d, %p, %p)\n", shader, maxLength, length, infoLog);)
+    DBG(SHUT_LOGD("glGetShaderInfoLog(%d, %d, %p, %p)\n", shader, maxLength, length, infoLog))
     // find shader
     CHECK_SHADER(void, shader)
     if(maxLength<=0) {
@@ -321,7 +366,7 @@ void APIENTRY_GL4ES gl4es_glGetShaderInfoLog(GLuint shader, GLsizei maxLength, G
 }
 
 void APIENTRY_GL4ES gl4es_glGetShaderiv(GLuint shader, GLenum pname, GLint *params) {
-    DBG(printf("glGetShaderiv(%d, %s, %p)\n", shader, PrintEnum(pname), params);)
+    DBG(SHUT_LOGD("glGetShaderiv(%d, %s, %p)\n", shader, PrintEnum(pname), params))
     // find shader
     CHECK_SHADER(void, shader)
     LOAD_GLES2(glGetShaderiv);
