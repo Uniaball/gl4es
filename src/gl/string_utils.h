@@ -3,6 +3,8 @@
 
 extern const char* AllSeparators;
 
+#define InplaceReplaceSimple gl4es_inplace_replace_simple
+
 int isDigit(char value);
 int isValidFunctionName(char value);
 char * InplaceReplaceByIndex(char* pBuffer, int* size, int startIndex, int endIndex, const char* replacement);
