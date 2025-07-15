@@ -14,11 +14,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DANDROID -Wno-pointer-sign -Wno-macro-redef
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 
-set(CMAKE_ANDROID_STL_TYPE none)
+set(CMAKE_ANDROID_STL_TYPE c++_static)
 
 set(CMAKE_BUILD_TYPE Release)
 
-include_directories(${CMAKE_SOURCE_DIR}/include )
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(C_SRC_FILES
         src/gl/string_utils.c
