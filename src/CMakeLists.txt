@@ -3,9 +3,9 @@ include_directories(util)
 #file(GLOB_RECURSE GL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/gl/*.c)
 SET(GL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbconverter.c
-	${CMAKE_CURRENT_SOURCE_DIR}/gl/arbgenerator.c
-	${CMAKE_CURRENT_SOURCE_DIR}/gl/arbhelper.c
-	${CMAKE_CURRENT_SOURCE_DIR}/gl/arbparser.c
+	   ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbgenerator.c
+	   ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbhelper.c
+	   ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbparser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/array.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/blit.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/blend.c
