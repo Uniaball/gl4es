@@ -3,9 +3,9 @@ include_directories(util)
 #file(GLOB_RECURSE GL_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/gl/*.c)
 SET(GL_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbconverter.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbgenerator.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbhelper.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/gl/arbparser.c
+	${CMAKE_CURRENT_SOURCE_DIR}/gl/arbgenerator.c
+	${CMAKE_CURRENT_SOURCE_DIR}/gl/arbhelper.c
+	${CMAKE_CURRENT_SOURCE_DIR}/gl/arbparser.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/array.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/blit.c
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/blend.c
@@ -70,6 +70,7 @@ SET(GL_SRC
 	${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/gles.c
 	${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/glstub.c
 	${CMAKE_CURRENT_SOURCE_DIR}/gl/math/matheval.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/gl/vgpu/shaderconv.c
 )
 
 SET(GL_H
@@ -135,11 +136,15 @@ SET(GL_H
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/gl4es.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/gles.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gl/wrap/stub.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/glsl/glsl_for_es.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/gl/vgpu/shaderconv.h
 )
 
-SET(GL_CPP_SRC
+SET(GLSL_CPP_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}glsl/glsl_for_es.cpp
+)
+
+SET(GLSL_H
+    ${CMAKE_CURRENT_SOURCE_DIR}/glsl/glsl_for_es.h
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" AND NOT NO_LOADER)
@@ -246,6 +251,7 @@ SET(EGL_SRC
 SET(EGL_H
     ${CMAKE_CURRENT_SOURCE_DIR}/egl/egl.h
 )
+
 if(EGL_WRAPPER)
     add_library(EGL SHARED ${EGL_SRC})
     target_link_libraries(EGL GL dl)
