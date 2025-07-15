@@ -22,8 +22,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include )
 
 set(C_SRC_FILES
         src/gl/string_utils.c
-        src/gl/cJSON.c
-        src/gl/config.c
         src/gl/arbconverter.c
         src/gl/arbgenerator.c
         src/gl/arbhelper.c
