@@ -28,6 +28,9 @@ struct shader_s {
     GLuint          id;     // internal id of the shader
     GLenum          type;   // type of the shader (GL_VERTEX or GL_FRAGMENT)
     int             attached; // number of time the shader is attached
+    int is_converted_essl_320;
+    char** uniforms_declarations;
+    int uniforms_declarations_count;
     int             deleted;// flagged for deletion
     int             compiled;// flag if compiled
     struct oldprogram_s   *old;     // in case the shader is an old ARB ASM-like program
