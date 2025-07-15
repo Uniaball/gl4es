@@ -6,7 +6,7 @@
 #include "gl4es.h"
 #include "glstate.h"
 #include "loader.h"
-#include "shaderconv.h"
+#include "vgpu/shaderconv.h"
 #include "../glsl/glsl_for_es.h"
 
 #define DEBUG
