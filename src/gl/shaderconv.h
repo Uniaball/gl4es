@@ -4,8 +4,11 @@
 #include "gles.h"
 #include "program.h"
 
-char * ConvertShaderConditionally(struct shader_s * shader_source);
+void set_uniforms_default_value(GLuint program, uniforms_declarations uniformVector, int uniformCount);
+char* process_uniform_declarations(char* glslCode, uniforms_declarations uniformVector, int* uniformCount);
+char* ConvertShaderVgpu(struct shader_s* shader_source);
 char* ConvertShader(const char* pBuffer, int isVertex, shaderconv_need_t *need, int forwardPort);
+char * ConvertShaderConditionally(struct shader_s * shader_source);
 
 int isBuiltinAttrib(const char* name);
 int isBuiltinMatrix(const char* name);
