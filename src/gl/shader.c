@@ -19,10 +19,10 @@
 KHASH_MAP_IMPL_INT(shaderlist, shader_t *);
 
 GLuint APIENTRY_GL4ES gl4es_glCreateShader(GLenum shaderType) {
-    DBG(SHUT_LOGD("glCreateShader(%s)\n", PrintEnum(shaderType)))
+    DBG(SHUT_LOGD("glCreateShader(%s)\n", PrintEnum(shaderType)));
     // sanity check
     if (shaderType!=GL_VERTEX_SHADER && shaderType!=GL_FRAGMENT_SHADER) {
-        DBG(SHUT_LOGD("Invalid shader type\n"))
+        DBG(SHUT_LOGD("Invalid shader type\n"));
         errorShim(GL_INVALID_ENUM);
         return 0;
     }
@@ -33,7 +33,7 @@ GLuint APIENTRY_GL4ES gl4es_glCreateShader(GLenum shaderType) {
     if(gles_glCreateShader) {
         shader = gles_glCreateShader(shaderType);
         if(!shader) {
-            DBG(SHUT_LOGD("Failed to create shader\n"))
+            DBG(SHUT_LOGD("Failed to create shader\n"));
             errorGL();
             return 0;
         }
@@ -94,7 +94,7 @@ void actually_detachshader(GLuint shader) {
 }
 
 void APIENTRY_GL4ES gl4es_glDeleteShader(GLuint shader) {
-    DBG(SHUT_LOGD("glDeleteShader(%d)\n", shader))
+    DBG(SHUT_LOGD("glDeleteShader(%d)\n", shader));
     // sanity check...
     CHECK_SHADER(void, shader)
     // delete the shader from the list
@@ -117,7 +117,7 @@ void APIENTRY_GL4ES gl4es_glDeleteShader(GLuint shader) {
 }
 
 void APIENTRY_GL4ES gl4es_glCompileShader(GLuint shader) {
-    DBG(SHUT_LOGD("glCompileShader(%d)\n", shader))
+    DBG(SHUT_LOGD("glCompileShader(%d)\n", shader));
     // look for the shader
     CHECK_SHADER(void, shader)
 
@@ -174,7 +174,7 @@ bool is_direct_shader(char *glsl)
 }
 
 void APIENTRY_GL4ES gl4es_glShaderSource(GLuint shader, GLsizei count, const GLchar * const *string, const GLint *length) {
-    DBG(SHUT_LOGD("glShaderSource(%d, %d, %p, %p)\n", shader, count, string, length))
+    DBG(SHUT_LOGD("glShaderSource(%d, %d, %p, %p)\n", shader, count, string, length));
     // sanity check
     if(count<=0) {
         errorShim(GL_INVALID_VALUE);
@@ -205,8 +205,8 @@ void APIENTRY_GL4ES gl4es_glShaderSource(GLuint shader, GLsizei count, const GLc
 			glshader->converted = strdup(glshader->source);
         else {
             int glsl_version = getGLSLVersion(glshader->source);
-            DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "))
-            DBG(SHUT_LOGD("%s", glshader->source))
+            DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "));
+            DBG(SHUT_LOGD("%s", glshader->source));
             if(glsl_version < 140) {
                 glshader->converted = strdup(ConvertShaderConditionally(glshader));
                 glshader->is_converted_essl_320 = 0;
@@ -216,7 +216,7 @@ void APIENTRY_GL4ES gl4es_glShaderSource(GLuint shader, GLsizei count, const GLc
                 glshader->converted = strdup(result!=NULL?process_uniform_declarations(result, glshader->uniforms_declarations, &glshader->uniforms_declarations_count):ConvertShaderConditionally(glshader));
                 glshader->is_converted_essl_320 = 1;
             }
-            DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
+            DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted));
         }
 		// send source to GLES2 hardware if any
         gles_glShaderSource(shader, 1, (const GLchar * const*)((glshader->converted)?(&glshader->converted):(&glshader->source)), NULL);
@@ -277,8 +277,8 @@ void redoShader(GLuint shader, shaderconv_need_t *need) {
 		glshader->converted = strdup(glshader->source);
     else {
         int glsl_version = getGLSLVersion(glshader->source);
-        DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "))
-        DBG(SHUT_LOGD("%s", glshader->source))
+        DBG(SHUT_LOGD("[INFO] [Shader] Shader source: "));
+        DBG(SHUT_LOGD("%s", glshader->source));
         if(glsl_version < 140) {
             glshader->converted = strdup(ConvertShaderConditionally(glshader));
             glshader->is_converted_essl_320 = 0;
@@ -288,7 +288,7 @@ void redoShader(GLuint shader, shaderconv_need_t *need) {
             glshader->converted = strdup(result!=NULL?process_uniform_declarations(result, glshader->uniforms_declarations, &glshader->uniforms_declarations_count):ConvertShaderConditionally(glshader));
             glshader->is_converted_essl_320 = 1;
         }
-        DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted))
+        DBG(SHUT_LOGD("\n[INFO] [Shader] Converted Shader source: \n%s", glshader->converted));
     }
 	// send source to GLES2 hardware if any
     gles_glShaderSource(shader, 1, (const GLchar * const*)((glshader->converted)?(&glshader->converted):(&glshader->source)), NULL);
@@ -297,7 +297,7 @@ void redoShader(GLuint shader, shaderconv_need_t *need) {
 }
 
 void APIENTRY_GL4ES gl4es_glGetShaderSource(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source) {
-    DBG(SHUT_LOGD("glGetShaderSource(%d, %d, %p, %p)\n", shader, bufSize, length, source))
+    DBG(SHUT_LOGD("glGetShaderSource(%d, %d, %p, %p)\n", shader, bufSize, length, source));
     // find shader
     CHECK_SHADER(void, shader)
     if (bufSize<=0) {
@@ -321,7 +321,7 @@ void APIENTRY_GL4ES gl4es_glGetShaderSource(GLuint shader, GLsizei bufSize, GLsi
 }
 
 GLboolean APIENTRY_GL4ES gl4es_glIsShader(GLuint shader) {
-    DBG(SHUT_LOGD("glIsShader(%d)\n", shader))
+    DBG(SHUT_LOGD("glIsShader(%d)\n", shader));
     // find shader
     shader_t *glshader = NULL;
     khint_t k;
@@ -348,7 +348,7 @@ shader_t *getShader(GLuint shader) {
 static const char* GLES_NoGLSLSupport = "No Shader support with current backend";
 
 void APIENTRY_GL4ES gl4es_glGetShaderInfoLog(GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog) {
-    DBG(SHUT_LOGD("glGetShaderInfoLog(%d, %d, %p, %p)\n", shader, maxLength, length, infoLog))
+    DBG(SHUT_LOGD("glGetShaderInfoLog(%d, %d, %p, %p)\n", shader, maxLength, length, infoLog));
     // find shader
     CHECK_SHADER(void, shader)
     if(maxLength<=0) {
@@ -366,7 +366,7 @@ void APIENTRY_GL4ES gl4es_glGetShaderInfoLog(GLuint shader, GLsizei maxLength, G
 }
 
 void APIENTRY_GL4ES gl4es_glGetShaderiv(GLuint shader, GLenum pname, GLint *params) {
-    DBG(SHUT_LOGD("glGetShaderiv(%d, %s, %p)\n", shader, PrintEnum(pname), params))
+    DBG(SHUT_LOGD("glGetShaderiv(%d, %s, %p)\n", shader, PrintEnum(pname), params));
     // find shader
     CHECK_SHADER(void, shader)
     LOAD_GLES2(glGetShaderiv);
