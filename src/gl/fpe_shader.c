@@ -1,5 +1,6 @@
 #include "fpe_shader.h"
 
+#include "logs.h"
 #include <stdio.h>
 
 #include "logs.h"
