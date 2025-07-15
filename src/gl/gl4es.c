@@ -34,6 +34,15 @@ void __stdcall GetSystemTimeAsFileTime(unsigned __int64*);
 #define DBG(a)
 #endif
 
+void trim(char* str) {
+    char* end;
+    while (isspace((unsigned char)*str)) str++;
+    if (*str == 0) return;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+    *(end + 1) = 0;
+}
+
 int adjust_vertices(GLenum mode, int nb) {
     switch (mode) {
         case GL_POINTS:
