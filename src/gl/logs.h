@@ -5,9 +5,19 @@
 #include "init.h"
 #include "attributes.h"
 //----------------------------------------------------------------------------
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void LogPrintf_NoPrefix(const char *fmt,...);
 void LogFPrintf(FILE *fp,const char *fmt,...);
 EXPORT void LogPrintf(const char *fmt,...);
+
+#ifdef __cplusplus
+}
+#endif
+
 //----------------------------------------------------------------------------
 #ifdef GL4ES_SILENCE_MESSAGES
 	#define SHUT_LOGD(...)
