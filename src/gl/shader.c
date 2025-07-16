@@ -372,6 +372,7 @@ void APIENTRY_GL4ES gl4es_glGetShaderiv(GLuint shader, GLenum pname, GLint *para
     CHECK_SHADER(void, shader)
     LOAD_GLES2(glGetShaderiv);
     noerrorShim();
+    
     switch (pname) {
         case GL_SHADER_TYPE:
             *params = glshader->type;
@@ -382,9 +383,34 @@ void APIENTRY_GL4ES gl4es_glGetShaderiv(GLuint shader, GLenum pname, GLint *para
         case GL_COMPILE_STATUS:
             if(gles_glGetShaderiv) {
                 gles_glGetShaderiv(glshader->id, pname, params);
+                
+                SHUT_LOGI("Shader %d compile status: %s\n", 
+                          shader, (*params == GL_TRUE) ? "SUCCESS" : "FAILED");
+                
+                if (*params == GL_FALSE) {
+                    GLint logLength = 0;
+                    gles_glGetShaderiv(glshader->id, GL_INFO_LOG_LENGTH, &logLength);
+                    
+                    if (logLength > 0) {
+                        char* log = (char*)malloc(logLength + 1);
+			LOAD_GLES2(glGetShaderInfoLog);
+			    
+                        gles_glGetShaderInfoLog(glshader->id, logLength, NULL, log);
+                        
+                        SHUT_LOGE("Shader %d compile error:\n%s\n", shader, log);
+                        
+                        if (glshader->source) {
+                            SHUT_LOGE("Shader source code:\n%s\n", glshader->source);
+                        }
+                        
+                        free(log);
+                    }
+                }
+                
                 errorGL();
             } else {
                 *params = GL_FALSE; // stub, compile always fail
+                SHUT_LOGE("No GLES2 support, shader %d compile forced to fail\n", shader);
             }
             break;
         case GL_INFO_LOG_LENGTH:
@@ -405,7 +431,6 @@ void APIENTRY_GL4ES gl4es_glGetShaderiv(GLuint shader, GLenum pname, GLint *para
             errorShim(GL_INVALID_ENUM);
     }
 }
-
 void APIENTRY_GL4ES gl4es_glGetShaderPrecisionFormat(GLenum shaderType, GLenum precisionType, GLint *range, GLint *precision) {
     LOAD_GLES2(glGetShaderPrecisionFormat);
     if(gles_glGetShaderPrecisionFormat) {
