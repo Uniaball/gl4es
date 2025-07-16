@@ -430,6 +430,8 @@ void APIENTRY_GL4ES gl4es_glGetShaderiv(GLuint shader, GLenum pname, GLint *para
         default:
             errorShim(GL_INVALID_ENUM);
     }
+
+	    if (pname==GL_COMPILE_STATUS) *params=GL_TRUE;
 }
 void APIENTRY_GL4ES gl4es_glGetShaderPrecisionFormat(GLenum shaderType, GLenum precisionType, GLint *range, GLint *precision) {
     LOAD_GLES2(glGetShaderPrecisionFormat);
