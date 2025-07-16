@@ -251,7 +251,7 @@ const GLubyte* APIENTRY_GL4ES gl4es_glGetString(GLenum name) {
 		case GL_VENDOR:
 			return (GLubyte *)"ptitSeb, Uniaball, aaaapai, BZLZHH";
 		case GL_RENDERER:
-			return (GLubyte *)"§dGL4ES wrapper";
+			return (GLubyte *)"§d§lGL4ES wrapper";
 		case GL_SHADING_LANGUAGE_VERSION:
             if(globals4es.gl==21)
             return (GLubyte *)"1.20 via gl4es";
