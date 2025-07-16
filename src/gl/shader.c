@@ -384,7 +384,7 @@ void APIENTRY_GL4ES gl4es_glGetShaderiv(GLuint shader, GLenum pname, GLint *para
             if(gles_glGetShaderiv) {
                 gles_glGetShaderiv(glshader->id, pname, params);
                 
-                SHUT_LOGI("Shader %d compile status: %s\n", 
+                SHUT_LOGD("Shader %d compile status: %s\n", 
                           shader, (*params == GL_TRUE) ? "SUCCESS" : "FAILED");
                 
                 if (*params == GL_FALSE) {
