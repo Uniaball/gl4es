@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v4
 
 
-    - name: Build
+    - name: Configure CMake
       run: |
         mkdir -p build
         cmake -B build \
@@ -39,4 +39,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: GL4ES
-        path: lib/libgl4es.so
+        path: build/libgl4es.so
