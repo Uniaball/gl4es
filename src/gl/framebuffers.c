@@ -1393,12 +1393,18 @@ void gl4es_SwapBuffers_currentContext();    // defined in glx/glx.c
 void APIENTRY_GL4ES gl4es_glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) {
     // mask will be ignored
     // filter will be taken only for ReadFBO has no Texture attached (so readpixel is used)
-    DBG(printf("glBlitFramebuffer(%d, %d, %d, %d,  %d, %d, %d, %d,  0x%04X, %s) fbo_read=%d, fbo_draw=%d\n",
+    DBG(SHUT_LOGD("glBlitFramebuffer(%d, %d, %d, %d,  %d, %d, %d, %d,  0x%04X, %s) fbo_read=%d, fbo_draw=%d\n",
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, PrintEnum(filter), glstate->fbo.fbo_read->id, glstate->fbo.fbo_draw->id);)
-
+    GLint viewport[4];
+    gl4es_glGetIntegerv(GL_VIEWPORT, viewport);
+    GLint width = viewport[2];
+    GLint height = viewport[3];
+	
+    // es3 is able to copy DEPTH or STENCIL data
+    /*
     if((mask&GL_COLOR_BUFFER_BIT)==0)
         return; // cannot copy DEPTH or STENCIL data on GLES, only COLOR_BUFFER...
-
+    */
     if(glstate->fbo.fbo_read == glstate->fbo.fbo_draw && srcX0==dstX0 && srcX1==dstX1 && srcY0==dstY0 && srcY1==dstY1)
         return; // no need to try copying on itself
     
@@ -1411,7 +1417,7 @@ void APIENTRY_GL4ES gl4es_glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX
 
     int created = (texture==0 || (glstate->fbo.fbo_read==glstate->fbo.fbo_draw));
     int oldtex = glstate->texture.active;
-    DBG(printf("   blit: created=%d, texture=%u, oldtex=%d\n", created, texture, oldtex);)
+    DBG(SHUT_LOGD("   blit: created=%d, texture=%u, oldtex=%d\n", created, texture, oldtex);)
     if (oldtex)
         gl4es_glActiveTexture(GL_TEXTURE0);
     float nwidth, nheight;
@@ -1483,6 +1489,9 @@ void APIENTRY_GL4ES gl4es_glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX
         fbowidth  = glstate->fbo.fbo_draw->width;
         fboheight = glstate->fbo.fbo_draw->height;
     }
+    //force width and height to be right, support Minecraft 1.21.2+
+    fbowidth=width;
+    fboheight=height;
     GLint vp[4];
     memcpy(vp, &glstate->raster.viewport, sizeof(vp));
     gl4es_glViewport(0, 0, fbowidth, fboheight);
