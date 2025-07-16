@@ -3,6 +3,12 @@
 
 extern const char* AllSeparators;
 
+#define InplaceReplaceSimple gl4es_inplace_replace_simple
+
+int isDigit(char value);
+int isValidFunctionName(char value);
+char * InplaceReplaceByIndex(char* pBuffer, int* size, int startIndex, int endIndex, const char* replacement);
+char * InplaceInsertByIndex(char * source, int *sourceLength, int insertPoint, const char *insertedString);
 const char* FindString(const char* pBuffer, const char* S);
 char* gl4es_find_string_nc(char* pBuffer, const char* S);
 int gl4es_count_string(const char* pBuffer, const char* S);

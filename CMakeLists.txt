@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(gl4es LANGUAGES C CXX)
+project(gl4es)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -funwind-tables -g -D_THREAD_SAFE -fPIC -stdlib=libc++")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNOX11 -fPIC -DNO_GBM -DDEFAULT_ES=3 -g -std=gnu99 -funwind-tables -O3 -fvisibility=hidden")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DANDROID -Wno-pointer-sign -Wno-macro-redefined -Wno-dangling-else -Wno-pointer-sign -Wno-implicit-const-int-float-conversion -DNOX11 -fPIC -DNO_GBM -DDEFAULT_ES=3 -g -funwind-tables -O3 -fvisibility=hidden")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 
@@ -18,7 +18,7 @@ set(CMAKE_ANDROID_STL_TYPE c++_static)
 
 set(CMAKE_BUILD_TYPE Release)
 
-include_directories(${CMAKE_SOURCE_DIR}/include )
+include_directories(${CMAKE_SOURCE_DIR}/include)
 
 set(C_SRC_FILES
         src/gl/string_utils.c
@@ -112,6 +112,7 @@ target_link_libraries(gl4es
         ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/libspirv-cross-c-shared.so
         c
         c++_static
+        c++abi
         dl
         )
 

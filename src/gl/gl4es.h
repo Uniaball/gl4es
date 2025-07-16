@@ -27,6 +27,8 @@ packed_call_t* APIENTRY_GL4ES glCopyPackedCall(const packed_call_t *packed);
 
 #define ERROR_IN_BEGIN if(glstate->list.begin) {errorShim(GL_INVALID_OPERATION); return;}
 
+void trim(char* str);
+
 const GLubyte* APIENTRY_GL4ES gl4es_glGetString(GLenum name);
 void APIENTRY_GL4ES gl4es_glGetIntegerv(GLenum pname, GLint *params);
 void APIENTRY_GL4ES gl4es_glGetFloatv(GLenum pname, GLfloat *params);

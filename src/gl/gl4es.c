@@ -17,6 +17,7 @@
 #include "loader.h"
 #include "matrix.h"
 #include "buffers.h"
+#include <ctype.h>
 #ifdef _WIN32
 #ifdef _WINBASE_
 #define GSM_CAST(c) ((LPFILETIME)c)
@@ -33,6 +34,15 @@ void __stdcall GetSystemTimeAsFileTime(unsigned __int64*);
 #else
 #define DBG(a)
 #endif
+
+void trim(char* str) {
+    char* end;
+    while (isspace((unsigned char)*str)) str++;
+    if (*str == 0) return;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
+    *(end + 1) = 0;
+}
 
 int adjust_vertices(GLenum mode, int nb) {
     switch (mode) {

@@ -4,6 +4,18 @@
 #include "khash.h"
 #include "gles.h"
 
+#define MAX_LINE_LENGTH 2048
+#define MAX_VARIABLE_LENGTH 1024
+#define MAX_INITIAL_VALUE_LENGTH 1024
+#define MAX_UNIFORM_VARIABLE_NUMBER 1024
+
+typedef struct {
+    char variable[MAX_VARIABLE_LENGTH];
+    char initial_value[MAX_INITIAL_VALUE_LENGTH];
+} uniform_declaration_s;
+
+typedef uniform_declaration_s uniforms_declarations[MAX_UNIFORM_VARIABLE_NUMBER];
+
 #define  shaderconv_need_t struct shaderconv_need_s
 #include "oldprogram.h"
 #undef shaderconv_need_t
@@ -29,7 +41,6 @@ struct shader_s {
     GLenum          type;   // type of the shader (GL_VERTEX or GL_FRAGMENT)
     int             attached; // number of time the shader is attached
     int is_converted_essl_320;
-    char** uniforms_declarations;
     int uniforms_declarations_count;
     int             deleted;// flagged for deletion
     int             compiled;// flag if compiled
@@ -38,6 +49,8 @@ struct shader_s {
     char*           converted;  // converted source (or null if nothing)
     // shaderconv
     shaderconv_need_t  need;    // the varying need / provide of the shader
+    uniforms_declarations uniforms_declarations;
+    char*                 before_patch;
 }; // shader_t defined in oldprogram.h
 
 KHASH_MAP_DECLARE_INT(shaderlist, struct shader_s *);

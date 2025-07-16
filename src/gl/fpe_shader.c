@@ -1,7 +1,9 @@
 #include "fpe_shader.h"
 
+#include "logs.h"
 #include <stdio.h>
 
+#include "logs.h"
 #include "string_utils.h"
 #include "init.h"
 #include "../glx/hardext.h"

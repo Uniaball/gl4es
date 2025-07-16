@@ -10,6 +10,7 @@
 #include "shader_hacks.h"
 #include "logs.h"
 
+#include "vgpu/shaderconv.h"
 
 typedef struct {
     const char* glname;
