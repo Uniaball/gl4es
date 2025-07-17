@@ -29,7 +29,7 @@ jobs:
         -DANDROID_TOOLCHAIN=clang
     
     - name: Build
-      run: cmake --build-${{ matrix.abi }} --target gl4es --config Release --parallel $(nproc)
+      run: cmake --build build-${{ matrix.abi }} --target gl4es --config Release --parallel $(nproc)
     
     - name: Strip
       run: |
