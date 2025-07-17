@@ -1,3 +1,4 @@
+#include <GLES/gl3.h>
 #include "buffers.h"
 
 #include "khash.h"
@@ -6,11 +7,12 @@
 #include "debug.h"
 #include "gl4es.h"
 #include "glstate.h"
+#include "glstate.h"
 #include "logs.h"
 #include "init.h"
 #include "loader.h"
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #define DBG(a) a
 #else
@@ -26,23 +28,29 @@ static GLuint lastbuffer = 1;
 // Utility function to bind / unbind a particular buffer
 
 glbuffer_t** BUFF(GLenum target) {
- switch(target) {
-     case GL_ARRAY_BUFFER:
-        return &glstate->vao->vertex;
-        break;
-     case GL_ELEMENT_ARRAY_BUFFER:
-        return &glstate->vao->elements;
-        break;
-     case GL_PIXEL_PACK_BUFFER:
-        return &glstate->vao->pack;
-        break;
-     case GL_PIXEL_UNPACK_BUFFER:
-        return &glstate->vao->unpack;
-        break;
-     default:
-       LOGD("Warning, unknown buffer target 0x%04X\n", target);
- }
- return (glbuffer_t**)NULL;
+    switch(target) {
+        case GL_ARRAY_BUFFER:
+            return &glstate->vao->vertex;
+            break;
+        case GL_ELEMENT_ARRAY_BUFFER:
+            return &glstate->vao->elements;
+            break;
+        case GL_PIXEL_PACK_BUFFER:
+            return &glstate->vao->pack;
+            break;
+        case GL_PIXEL_UNPACK_BUFFER:
+            return &glstate->vao->unpack;
+            break;
+        case GL_COPY_READ_BUFFER:
+            return &glstate->vao->read;
+            break;
+        case GL_COPY_WRITE_BUFFER:
+            return &glstate->vao->write;
+            break;
+        default:
+        LOGD("Warning, unknown buffer target 0x%04X\n", target);
+    }
+    return (glbuffer_t**)NULL;
 }
 
 void unbind_buffer(GLenum target) {
@@ -73,15 +81,19 @@ glbuffer_t* getbuffer_id(GLuint buffer) {
 }
 
 int buffer_target(GLenum target) {
-	if (target==GL_ARRAY_BUFFER)
-		return 1;
-	if (target==GL_ELEMENT_ARRAY_BUFFER)
-		return 1;
-	if (target==GL_PIXEL_PACK_BUFFER)
-		return 1;
-	if (target==GL_PIXEL_UNPACK_BUFFER)
-		return 1;
-	return 0;
+    if (target==GL_ARRAY_BUFFER)
+        return 1;
+    if (target==GL_ELEMENT_ARRAY_BUFFER)
+        return 1;
+    if (target==GL_PIXEL_PACK_BUFFER)
+        return 1;
+    if (target==GL_PIXEL_UNPACK_BUFFER)
+        return 1;
+    if (target==GL_COPY_READ_BUFFER)
+        return 1;
+    if (target==GL_COPY_WRITE_BUFFER)
+        return 1;
+    return 0;
 }
 
 void rebind_real_buff_arrays(int old_buffer, int new_buffer) {
@@ -95,7 +107,7 @@ void rebind_real_buff_arrays(int old_buffer, int new_buffer) {
 }
 
 void APIENTRY_GL4ES gl4es_glGenBuffers(GLsizei n, GLuint * buffers) {
-    DBG(printf("glGenBuffers(%i, %p)\n", n, buffers);)
+    DBG(SHUT_LOGD("glGenBuffers(%i, %p)\n", n, buffers);)
 	noerrorShim();
     if (n<1) {
 		errorShim(GL_INVALID_VALUE);
@@ -122,8 +134,221 @@ void APIENTRY_GL4ES gl4es_glGenBuffers(GLsizei n, GLuint * buffers) {
     }
 }
 
+void VISIBLE glBindBufferBase(GLenum target, GLuint index, GLuint buffer) {
+    DBG(SHUT_LOGD("glBindBufferBase(%s, %u, %u)\n", PrintEnum(target), index, buffer);)
+        FLUSH_BEGINEND;
+
+    // Check if the target is valid
+    if (!buffer_target(target)) {
+        errorShim(GL_INVALID_ENUM);
+        return;
+    }
+
+    // If buffer is 0, unbind the buffer
+    if (buffer == 0) {
+        // unbind buffer from the specified target and index
+        glstate->vao->vertexattrib[index].real_buffer = 0;
+        glstate->vao->vertexattrib[index].real_pointer = NULL;
+    }
+    else {
+        // Search for the existing buffer or create a new one if not found
+        khint_t k;
+        int ret;
+        glbuffer_t* buff = NULL;
+        khash_t(buff)* list = glstate->buffers;
+        k = kh_get(buff, list, buffer);
+        if (k == kh_end(list)) {
+            // Create a new buffer if not found
+            k = kh_put(buff, list, buffer, &ret);
+            buff = kh_value(list, k) = malloc(sizeof(glbuffer_t));
+            buff->buffer = buffer;
+            buff->type = target;
+            buff->data = NULL;
+            buff->usage = GL_STATIC_DRAW;
+            buff->size = 0;
+            buff->access = GL_READ_WRITE;
+            buff->mapped = 0;
+            buff->real_buffer = 0;
+        }
+        else {
+            buff = kh_value(list, k);
+        }
+
+        // Bind the buffer to the specified index and target
+        glstate->vao->vertexattrib[index].real_buffer = buffer;
+        glstate->vao->vertexattrib[index].real_pointer = NULL; // Real buffer pointer can be updated later
+        bind_buffer(target, buff);
+    }
+
+    noerrorShim();
+}
+
+void VISIBLE glBindBuffersRange(GLenum target, GLuint first, GLsizei count, const GLuint* buffers, const GLintptr* offsets, const GLsizeiptr* sizes) {
+    DBG(SHUT_LOGD("glBindBuffersRange(%s, %u, %d, %p, %p, %p)\n", PrintEnum(target), first, count, buffers, offsets, sizes);)
+        FLUSH_BEGINEND;
+
+    // Check if the target is valid
+    if (!buffer_target(target)) {
+        errorShim(GL_INVALID_ENUM);
+        return;
+    }
+
+    for (GLsizei i = 0; i < count; ++i) {
+        GLuint index = first + i;
+        GLuint buffer = buffers[i];
+        GLintptr offset = offsets[i];
+        GLsizeiptr size = sizes[i];
+
+        // If buffer is 0, unbind the buffer from the specified target and index
+        if (buffer == 0) {
+            glstate->vao->vertexattrib[index].real_buffer = 0;
+            glstate->vao->vertexattrib[index].real_pointer = NULL;
+            glstate->vao->vertexattrib[index].stride = 0;
+        }
+        else {
+            // Search for the existing buffer or create a new one if not found
+            khint_t k;
+            int ret;
+            glbuffer_t* buff = NULL;
+            khash_t(buff)* list = glstate->buffers;
+            k = kh_get(buff, list, buffer);
+            if (k == kh_end(list)) {
+                // Create a new buffer if not found
+                k = kh_put(buff, list, buffer, &ret);
+                buff = kh_value(list, k) = malloc(sizeof(glbuffer_t));
+                buff->buffer = buffer;
+                buff->type = target;
+                buff->data = NULL;
+                buff->usage = GL_STATIC_DRAW;
+                buff->size = 0;
+                buff->access = GL_READ_WRITE;
+                buff->mapped = 0;
+                buff->real_buffer = 0;
+            }
+            else {
+                buff = kh_value(list, k);
+            }
+
+            // Bind the buffer with the specified offset and size
+            glstate->vao->vertexattrib[index].real_buffer = buffer;
+            glstate->vao->vertexattrib[index].real_pointer = (const GLvoid*)(intptr_t)offset;
+            glstate->vao->vertexattrib[index].stride = size;
+            bind_buffer(target, buff);
+        }
+    }
+
+    noerrorShim();
+}
+
+
+void VISIBLE glBindBuffersBase(GLenum target, GLuint first, GLsizei count, const GLuint* buffers) {
+    DBG(SHUT_LOGD("glBindBuffersBase(%s, %u, %d, %p)\n", PrintEnum(target), first, count, buffers);)
+        FLUSH_BEGINEND;
+
+    // Check if the target is valid
+    if (!buffer_target(target)) {
+        errorShim(GL_INVALID_ENUM);
+        return;
+    }
+
+    for (GLsizei i = 0; i < count; ++i) {
+        GLuint index = first + i;
+        GLuint buffer = buffers[i];
+
+        // If buffer is 0, unbind the buffer from the specified target and index
+        if (buffer == 0) {
+            glstate->vao->vertexattrib[index].real_buffer = 0;
+            glstate->vao->vertexattrib[index].real_pointer = NULL;
+        }
+        else {
+            // Search for the existing buffer or create a new one if not found
+            khint_t k;
+            int ret;
+            glbuffer_t* buff = NULL;
+            khash_t(buff)* list = glstate->buffers;
+            k = kh_get(buff, list, buffer);
+            if (k == kh_end(list)) {
+                // Create a new buffer if not found
+                k = kh_put(buff, list, buffer, &ret);
+                buff = kh_value(list, k) = malloc(sizeof(glbuffer_t));
+                buff->buffer = buffer;
+                buff->type = target;
+                buff->data = NULL;
+                buff->usage = GL_STATIC_DRAW;
+                buff->size = 0;
+                buff->access = GL_READ_WRITE;
+                buff->mapped = 0;
+                buff->real_buffer = 0;
+            }
+            else {
+                buff = kh_value(list, k);
+            }
+
+            // Bind the buffer to the specified index and target
+            glstate->vao->vertexattrib[index].real_buffer = buffer;
+            glstate->vao->vertexattrib[index].real_pointer = NULL;
+            bind_buffer(target, buff);
+        }
+    }
+
+    noerrorShim();
+}
+
+
+void VISIBLE glBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size) {
+    DBG(SHUT_LOGD("glBindBufferRange(%s, %u, %u, %ld, %ld)\n", PrintEnum(target), index, buffer, offset, size);)
+        FLUSH_BEGINEND;
+
+    // Check if the target is valid
+    if (!buffer_target(target)) {
+        errorShim(GL_INVALID_ENUM);
+        return;
+    }
+
+    // If buffer is 0, unbind the buffer from the specified target and index
+    if (buffer == 0) {
+        glstate->vao->vertexattrib[index].real_buffer = 0;
+        glstate->vao->vertexattrib[index].real_pointer = NULL;
+    }
+    else {
+        // Search for the existing buffer or create a new one if not found
+        khint_t k;
+        int ret;
+        glbuffer_t* buff = NULL;
+        khash_t(buff)* list = glstate->buffers;
+        k = kh_get(buff, list, buffer);
+        if (k == kh_end(list)) {
+            // Create a new buffer if not found
+            k = kh_put(buff, list, buffer, &ret);
+            buff = kh_value(list, k) = malloc(sizeof(glbuffer_t));
+            buff->buffer = buffer;
+            buff->type = target;
+            buff->data = NULL;
+            buff->usage = GL_STATIC_DRAW;
+            buff->size = 0;
+            buff->access = GL_READ_WRITE;
+            buff->mapped = 0;
+            buff->real_buffer = 0;
+        }
+        else {
+            buff = kh_value(list, k);
+        }
+
+        // Bind the buffer with specified offset and size
+        glstate->vao->vertexattrib[index].real_buffer = buffer;
+        glstate->vao->vertexattrib[index].real_pointer = NULL; // Real buffer pointer can be updated later
+        glstate->vao->vertexattrib[index].pointer = (const GLvoid*)(intptr_t)offset;
+        glstate->vao->vertexattrib[index].stride = size;  // Set the stride to the specified size
+
+        // Bind the buffer with offset and size
+        bind_buffer(target, buff);
+    }
+
+    noerrorShim();
+}
+
 void APIENTRY_GL4ES gl4es_glBindBuffer(GLenum target, GLuint buffer) {
-    DBG(printf("glBindBuffer(%s, %u)\n", PrintEnum(target), buffer);)
+    DBG(SHUT_LOGD("glBindBuffer(%s, %u)\n", PrintEnum(target), buffer);)
     // this flush is probably not needed as long as real VBO are not used
     FLUSH_BEGINEND;
 
@@ -164,7 +389,7 @@ void APIENTRY_GL4ES gl4es_glBindBuffer(GLenum target, GLuint buffer) {
 }
 
 void APIENTRY_GL4ES gl4es_glBufferData(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
-    DBG(printf("glBufferData(%s, %zi, %p, %s)\n", PrintEnum(target), size, data, PrintEnum(usage));)
+    DBG(SHUT_LOGD("glBufferData(%s, %zi, %p, %s)\n", PrintEnum(target), size, data, PrintEnum(usage));)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return;
@@ -199,7 +424,7 @@ void APIENTRY_GL4ES gl4es_glBufferData(GLenum target, GLsizeiptr size, const GLv
         LOAD_GLES(glBindBuffer);
         bindBuffer(target, buff->real_buffer);
         gles_glBufferData(target, size, data, usage);
-        DBG(printf(" => real VBO %d\n", buff->real_buffer);)
+        DBG(SHUT_LOGD(" => real VBO %d\n", buff->real_buffer);)
     }
         
     if (buff->data && buff->size<size) {
@@ -210,7 +435,7 @@ void APIENTRY_GL4ES gl4es_glBufferData(GLenum target, GLsizeiptr size, const GLv
         buff->data = malloc(size);
     buff->size = size;
     buff->usage = usage;
-    DBG(printf("\t buff->data = %p (size=%zd)\n", buff->data, size);)
+    DBG(SHUT_LOGD("\t buff->data = %p (size=%zd)\n", buff->data, size);)
     buff->access = GL_READ_WRITE;
     if (data)
         memcpy(buff->data, data, size);
@@ -226,10 +451,10 @@ void APIENTRY_GL4ES gl4es_glBufferData(GLenum target, GLsizeiptr size, const GLv
 }
 
 void APIENTRY_GL4ES gl4es_glNamedBufferData(GLuint buffer, GLsizeiptr size, const GLvoid * data, GLenum usage) {
-    DBG(printf("glNamedBufferData(%u, %zi, %p, %s)\n", buffer, size, data, PrintEnum(usage));)
+    DBG(SHUT_LOGD("glNamedBufferData(%u, %zi, %p, %s)\n", buffer, size, data, PrintEnum(usage));)
     glbuffer_t *buff = getbuffer_id(buffer);
     if (buff==NULL) {
-        DBG(printf("Named Buffer not found\n");)
+        DBG(SHUT_LOGD("Named Buffer not found\n");)
 		errorShim(GL_INVALID_OPERATION);
         return;
     }
@@ -276,7 +501,7 @@ void APIENTRY_GL4ES gl4es_glNamedBufferData(GLuint buffer, GLsizeiptr size, cons
 }
 
 void APIENTRY_GL4ES gl4es_glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data) {
-    DBG(printf("glBufferSubData(%s, %p, %zi, %p)\n", PrintEnum(target), (void*)offset, size, data);)
+    DBG(SHUT_LOGD("glBufferSubData(%s, %p, %zi, %p)\n", PrintEnum(target), (void*)offset, size, data);)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return;
@@ -284,7 +509,7 @@ void APIENTRY_GL4ES gl4es_glBufferSubData(GLenum target, GLintptr offset, GLsize
     glbuffer_t *buff = getbuffer_buffer(target);
     if (buff==NULL) {
 		errorShim(GL_INVALID_OPERATION);
-        DBG(printf("LIBGL: Warning, null buffer for target=0x%04X for glBufferSubData\n", target);)
+        DBG(SHUT_LOGD("LIBGL: Warning, null buffer for target=0x%04X for glBufferSubData\n", target);)
         return;
     }
 
@@ -307,7 +532,7 @@ void APIENTRY_GL4ES gl4es_glBufferSubData(GLenum target, GLintptr offset, GLsize
     noerrorShim();
 }
 void APIENTRY_GL4ES gl4es_glNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, const GLvoid * data) {
-    DBG(printf("glNamedBufferSubData(%u, %p, %zi, %p)\n", buffer, (void*)offset, size, data);)
+    DBG(SHUT_LOGD("glNamedBufferSubData(%u, %p, %zi, %p)\n", buffer, (void*)offset, size, data);)
     glbuffer_t *buff = getbuffer_id(buffer);
     if (buff==NULL) {
 		errorShim(GL_INVALID_OPERATION);
@@ -330,7 +555,7 @@ void APIENTRY_GL4ES gl4es_glNamedBufferSubData(GLuint buffer, GLintptr offset, G
 }
 
 void APIENTRY_GL4ES gl4es_glDeleteBuffers(GLsizei n, const GLuint * buffers) {
-    DBG(printf("glDeleteBuffers(%i, %p)\n", n, buffers);)
+    DBG(SHUT_LOGD("glDeleteBuffers(%i, %p)\n", n, buffers);)
     if(!glstate) return;
     FLUSH_BEGINEND;
     
@@ -341,7 +566,7 @@ void APIENTRY_GL4ES gl4es_glDeleteBuffers(GLsizei n, const GLuint * buffers) {
         glbuffer_t *buff;
         for (int i = 0; i < n; i++) {
             GLuint t = buffers[i];
-            DBG(printf("\t deleting %d\n", t);)
+            DBG(SHUT_LOGD("\t deleting %d\n", t);)
             if (t) {    // don't allow to remove default one
                 k = kh_get(buff, list, t);
                 if (k != kh_end(list)) {
@@ -365,7 +590,7 @@ void APIENTRY_GL4ES gl4es_glDeleteBuffers(GLsizei n, const GLuint * buffers) {
                             glstate->vao->vertexattrib[j].real_buffer = 0;
                             glstate->vao->vertexattrib[j].real_pointer = 0;
                         }
-                    DBG(printf("\t buff->data = %p\n", buff->data);)
+                    DBG(SHUT_LOGD("\t buff->data = %p\n", buff->data);)
                     if (buff->data) free(buff->data);
                     kh_del(buff, list, k);
                     free(buff);
@@ -373,12 +598,12 @@ void APIENTRY_GL4ES gl4es_glDeleteBuffers(GLsizei n, const GLuint * buffers) {
             }
         }
     }
-    DBG(printf("\t done\n");)
+    DBG(SHUT_LOGD("\t done\n");)
     noerrorShim();
 }
 
 GLboolean APIENTRY_GL4ES gl4es_glIsBuffer(GLuint buffer) {
-    DBG(printf("glIsBuffer(%u)\n", buffer);)
+    DBG(SHUT_LOGD("glIsBuffer(%u)\n", buffer);)
 	khash_t(buff) *list = glstate->buffers;
 	khint_t k;
 	noerrorShim();
@@ -417,13 +642,14 @@ static void bufferGetParameteriv(glbuffer_t* buff, GLenum value, GLint * data) {
 			data[0] = buff->usage;
 			break;
 		default:
+		    SHUT_LOGD("[ERROR] bufferGetParameteriv Unexpected: %s", PrintEnum(value));
 			errorShim(GL_INVALID_ENUM);
 		/* TODO Error if something else */
 	}
 }
 
 void APIENTRY_GL4ES gl4es_glGetBufferParameteriv(GLenum target, GLenum value, GLint * data) {
-    DBG(printf("glGetBufferParameteriv(%s, %s, %p)\n", PrintEnum(target), PrintEnum(value), data);)
+    DBG(SHUT_LOGD("glGetBufferParameteriv(%s, %s, %p)\n", PrintEnum(target), PrintEnum(value), data);)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return;
@@ -436,7 +662,7 @@ void APIENTRY_GL4ES gl4es_glGetBufferParameteriv(GLenum target, GLenum value, GL
     bufferGetParameteriv(buff, value, data);
 }
 void APIENTRY_GL4ES gl4es_glGetNamedBufferParameteriv(GLuint buffer, GLenum value, GLint * data) {
-    DBG(printf("glGetNamedBufferParameteriv(%u, %s, %p)\n", buffer, PrintEnum(value), data);)
+    DBG(SHUT_LOGD("glGetNamedBufferParameteriv(%u, %s, %p)\n", buffer, PrintEnum(value), data);)
 	glbuffer_t* buff = getbuffer_id(buffer);
 	if (buff==NULL) {
 		errorShim(GL_INVALID_OPERATION);
@@ -446,7 +672,7 @@ void APIENTRY_GL4ES gl4es_glGetNamedBufferParameteriv(GLuint buffer, GLenum valu
 }
 
 void* APIENTRY_GL4ES gl4es_glMapBuffer(GLenum target, GLenum access) {
-    DBG(printf("glMapBuffer(%s, %s)\n", PrintEnum(target), PrintEnum(access));)
+    DBG(SHUT_LOGD("glMapBuffer(%s, %s)\n", PrintEnum(target), PrintEnum(access));)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return (void*)NULL;
@@ -471,7 +697,7 @@ void* APIENTRY_GL4ES gl4es_glMapBuffer(GLenum target, GLenum access) {
 	return buff->data;		// Not nice, should do some copy or something probably
 }
 void* APIENTRY_GL4ES gl4es_glMapNamedBuffer(GLuint buffer, GLenum access) {
-    DBG(printf("glMapNamedBuffer(%u, %s)\n", buffer, PrintEnum(access));)
+    DBG(SHUT_LOGD("glMapNamedBuffer(%u, %s)\n", buffer, PrintEnum(access));)
 
 	glbuffer_t *buff = getbuffer_id(buffer);
 	if (buff==NULL) {
@@ -490,7 +716,7 @@ void* APIENTRY_GL4ES gl4es_glMapNamedBuffer(GLuint buffer, GLenum access) {
 }
 
 GLboolean APIENTRY_GL4ES gl4es_glUnmapBuffer(GLenum target) {
-    DBG(printf("glUnmapBuffer(%s)\n", PrintEnum(target));)
+    DBG(SHUT_LOGD("glUnmapBuffer(%s)\n", PrintEnum(target));)
     if(glstate->list.compiling) {errorShim(GL_INVALID_OPERATION); return GL_FALSE;}
     FLUSH_BEGINEND;
         
@@ -527,7 +753,7 @@ GLboolean APIENTRY_GL4ES gl4es_glUnmapBuffer(GLenum target) {
 	return GL_FALSE;
 }
 GLboolean APIENTRY_GL4ES gl4es_glUnmapNamedBuffer(GLuint buffer) {
-    DBG(printf("glUnmapNamedBuffer(%u)\n", buffer);)
+    DBG(SHUT_LOGD("glUnmapNamedBuffer(%u)\n", buffer);)
     if(glstate->list.compiling) {errorShim(GL_INVALID_OPERATION); return GL_FALSE;}
     FLUSH_BEGINEND;
         
@@ -556,7 +782,7 @@ GLboolean APIENTRY_GL4ES gl4es_glUnmapNamedBuffer(GLuint buffer) {
 }
 
 void APIENTRY_GL4ES gl4es_glGetBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, GLvoid * data) {
-    DBG(printf("glGetBufferSubData(%s, %p, %zi, %p)\n", PrintEnum(target), (void*)offset, size, data);)
+    DBG(SHUT_LOGD("glGetBufferSubData(%s, %p, %zi, %p)\n", PrintEnum(target), (void*)offset, size, data);)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return;
@@ -570,7 +796,7 @@ void APIENTRY_GL4ES gl4es_glGetBufferSubData(GLenum target, GLintptr offset, GLs
 	noerrorShim();
 }
 void APIENTRY_GL4ES gl4es_glGetNamedBufferSubData(GLuint buffer, GLintptr offset, GLsizeiptr size, GLvoid * data) {
-    DBG(printf("glGetNamedBufferSubData(%u, %p, %zi, %p)\n", buffer, (void*)offset, size, data);)
+    DBG(SHUT_LOGD("glGetNamedBufferSubData(%u, %p, %zi, %p)\n", buffer, (void*)offset, size, data);)
 	glbuffer_t *buff = getbuffer_id(buffer);
 
 	if (buff==NULL)
@@ -581,7 +807,7 @@ void APIENTRY_GL4ES gl4es_glGetNamedBufferSubData(GLuint buffer, GLintptr offset
 }
 
 void APIENTRY_GL4ES gl4es_glGetBufferPointerv(GLenum target, GLenum pname, GLvoid ** params) {
-    DBG(printf("glGetBufferPointerv(%s, %s, %p)\n", PrintEnum(target), PrintEnum(pname), params);)
+    DBG(SHUT_LOGD("glGetBufferPointerv(%s, %s, %p)\n", PrintEnum(target), PrintEnum(pname), params);)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return;
@@ -600,7 +826,7 @@ void APIENTRY_GL4ES gl4es_glGetBufferPointerv(GLenum target, GLenum pname, GLvoi
 	}
 }
 void APIENTRY_GL4ES gl4es_glGetNamedBufferPointerv(GLuint buffer, GLenum pname, GLvoid ** params) {
-    DBG(printf("glGetNamedBufferPointerv(%u, %s, %p)\n", buffer, PrintEnum(pname), params);)
+    DBG(SHUT_LOGD("glGetNamedBufferPointerv(%u, %s, %p)\n", buffer, PrintEnum(pname), params);)
 	glbuffer_t *buff = getbuffer_id(buffer);
 	if (buff==NULL)
 		return;		// Should generate an error!
@@ -617,7 +843,7 @@ void APIENTRY_GL4ES gl4es_glGetNamedBufferPointerv(GLuint buffer, GLenum pname, 
 
 void* APIENTRY_GL4ES gl4es_glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access)
 {
-    DBG(printf("glMapBufferRange(%s, %p, %zd, 0x%x)\n", PrintEnum(target), (void*)offset, length, access);)
+    DBG(SHUT_LOGD("glMapBufferRange(%s, %p, %zd, 0x%x)\n", PrintEnum(target), (void*)offset, length, access);)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return NULL;
@@ -644,7 +870,7 @@ void* APIENTRY_GL4ES gl4es_glMapBufferRange(GLenum target, GLintptr offset, GLsi
 }
 void APIENTRY_GL4ES gl4es_glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr length)
 {
-    DBG(printf("glFlushMappedBufferRange(%s, %p, %zd)\n", PrintEnum(target), (void*)offset, length);)
+    DBG(SHUT_LOGD("glFlushMappedBufferRange(%s, %p, %zd)\n", PrintEnum(target), (void*)offset, length);)
 	if (!buffer_target(target)) {
 		errorShim(GL_INVALID_ENUM);
 		return;
@@ -668,30 +894,55 @@ void APIENTRY_GL4ES gl4es_glFlushMappedBufferRange(GLenum target, GLintptr offse
         bindBuffer(buff->type, buff->real_buffer);
         gles_glBufferSubData(buff->type, buff->offset+offset, length, (void*)((uintptr_t)buff->data+buff->offset+offset));
     }
+
+    if (buff->type == GL_COPY_READ_BUFFER) {
+        LOAD_GLES(glBufferSubData);
+        bindBuffer(buff->type, buff->real_buffer);
+        gles_glBufferSubData(buff->type, buff->offset+offset, length, (void*)((uintptr_t)buff->data+buff->offset+offset));
+    }
 }
 
 void APIENTRY_GL4ES gl4es_glCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)
 {
-    DBG(printf("glCopyBufferSubData(%s, %s, %p, %p, %zd)\n", PrintEnum(readTarget), PrintEnum(writeTarget), (void*)readOffset, (void*)writeOffset, size);)
-    //TODO: Add GL_COPY_READ_BUFFER and GL_COPY_WRITE_BUFFER (and GL_QUERY_BUFFER?)
-	glbuffer_t *readbuff = getbuffer_buffer(readTarget);
-	glbuffer_t *writebuff = getbuffer_buffer(writeTarget);
-    if(!readbuff || !writebuff) {
+    DBG(SHUT_LOGD("glCopyBufferSubData(%s, %s, %p, %p, %zd)\n", PrintEnum(readTarget), PrintEnum(writeTarget), (void*)readOffset, (void*)writeOffset, size);)
+
+    glbuffer_t *readbuff = getbuffer_buffer(readTarget);
+    glbuffer_t *writebuff = getbuffer_buffer(writeTarget);
+    
+    if (!readbuff || !writebuff) {
         errorShim(GL_INVALID_VALUE);
         return;
     }
-    if(writebuff->ranged && !(writebuff->access&GL_MAP_PERSISTENT_BIT)) {
+    
+    if ((writebuff->ranged && !(writebuff->access & GL_MAP_PERSISTENT_BIT)) && readTarget != GL_COPY_READ_BUFFER) {
         errorShim(GL_INVALID_OPERATION);
         return;
     }
+    
+    /*
+    if ((char*)readbuff->data + readOffset >= (char*)readbuff->data + readbuff->size ||
+        (char*)writebuff->data + writeOffset >= (char*)writebuff->data + writebuff->size ||
+        (readOffset + size > readbuff->size) ||
+        (writeOffset + size > writebuff->size)) {
+        errorShim(GL_INVALID_OPERATION);
+        return;
+    }
+
+    if (readbuff == writebuff && readOffset + size > writeOffset) {
+        errorShim(GL_INVALID_OPERATION);
+        return;
+    }
+     */
+
     memcpy((char*)writebuff->data + writeOffset, (char*)readbuff->data + readOffset, size);
+
     if (writebuff->real_buffer && (writebuff->type == GL_ARRAY_BUFFER || writebuff->type == GL_ELEMENT_ARRAY_BUFFER) &&
         writebuff->mapped && (writebuff->access == GL_WRITE_ONLY || writebuff->access == GL_READ_WRITE)) {
         LOAD_GLES(glBufferSubData);
         bindBuffer(writebuff->type, writebuff->real_buffer);
-        gles_glBufferSubData(writebuff->type, writeOffset, size, (char*)writebuff->data+writeOffset);
+        gles_glBufferSubData(writebuff->type, writeOffset, size, (char*)writebuff->data + writeOffset);
     }
-    
+
     if (readTarget == GL_COPY_READ_BUFFER) {
         DBG(SHUT_LOGD("GL_ARRAY_BUFFER data: %p\nGL_COPY_READ_BUFFER data: %p\n", getbuffer_buffer(GL_ARRAY_BUFFER)->data, readbuff->data);)
         LOAD_GLES(glBufferSubData);
@@ -699,7 +950,7 @@ void APIENTRY_GL4ES gl4es_glCopyBufferSubData(GLenum readTarget, GLenum writeTar
         bindBuffer(writebuff->type, writebuff->real_buffer);
         gles_glBufferSubData(writebuff->type, writeOffset, size, (char*)writebuff->data + writeOffset);
     }
-    
+
     noerrorShim();
 }
 
@@ -710,10 +961,10 @@ void bindBuffer(GLenum target, GLuint buffer)
     if(target==GL_ARRAY_BUFFER) {
         if(glstate->bind_buffer.array == buffer)
             return;
-        DBG(printf("Bind buffer %d to GL_ARRAY_BUFFER\n", buffer);)
+        DBG(SHUT_LOGD("Bind buffer %d to GL_ARRAY_BUFFER\n", buffer);)
         glstate->bind_buffer.array = buffer;
         gles_glBindBuffer(target, buffer);
-        
+
     } else if (target==GL_ELEMENT_ARRAY_BUFFER) {
         glstate->bind_buffer.want_index = buffer;
         if(glstate->bind_buffer.index == buffer)
@@ -753,7 +1004,7 @@ void realize_bufferIndex()
     if(glstate->bind_buffer.index != glstate->bind_buffer.want_index) {
         glstate->bind_buffer.index = glstate->bind_buffer.want_index;
         gles_glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glstate->bind_buffer.index);
-        DBG(printf("Bind buffer %d to GL_ELEMENT_ARRAY_BUFFER\n", glstate->bind_buffer.index);)
+        DBG(SHUT_LOGD("Bind buffer %d to GL_ELEMENT_ARRAY_BUFFER\n", glstate->bind_buffer.index);)
         glstate->bind_buffer.used = (glstate->bind_buffer.index && glstate->bind_buffer.array)?1:0;
     }
 }
@@ -774,7 +1025,7 @@ void unboundBuffers()
     if(glstate->bind_buffer.array) {
         glstate->bind_buffer.array = 0;
         gles_glBindBuffer(GL_ARRAY_BUFFER, 0);
-        DBG(printf("Bind buffer %d to GL_ARRAY_BUFFER\n", 0);)
+        DBG(SHUT_LOGD("Bind buffer %d to GL_ARRAY_BUFFER\n", 0);)
     }
     if(glstate->bind_buffer.index) {
         glstate->bind_buffer.index = 0;
@@ -792,17 +1043,6 @@ void unboundBuffers()
         gles_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
         DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_WRITE_BUFFER\n", 0);)
     }
-    if(glstate->bind_buffer.copy_read) {
-        glstate->bind_buffer.copy_read = 0;
-        gles_glBindBuffer(GL_COPY_READ_BUFFER, 0);
-        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_READ_BUFFER\n", 0);)
-    }
-    if(glstate->bind_buffer.copy_write) {
-        glstate->bind_buffer.copy_write = 0;
-        gles_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
-        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_WRITE_BUFFER\n", 0);)
-        }
-    
     glstate->bind_buffer.used = 0;
 }
 
@@ -861,7 +1101,7 @@ AliasExport(void,glGetNamedBufferPointerv,EXT,(GLuint buffer, GLenum pname, GLvo
 static GLuint lastvao = 1;
 
 void APIENTRY_GL4ES gl4es_glGenVertexArrays(GLsizei n, GLuint *arrays) {
-    DBG(printf("glGenVertexArrays(%i, %p)\n", n, arrays);)
+    DBG(SHUT_LOGD("glGenVertexArrays(%i, %p)\n", n, arrays);)
 	noerrorShim();
     if (n<1) {
 		errorShim(GL_INVALID_VALUE);
@@ -872,7 +1112,7 @@ void APIENTRY_GL4ES gl4es_glGenVertexArrays(GLsizei n, GLuint *arrays) {
     }
 }
 void APIENTRY_GL4ES gl4es_glBindVertexArray(GLuint array) {
-    DBG(printf("glBindVertexArray(%u)\n", array);)
+    DBG(SHUT_LOGD("glBindVertexArray(%u)\n", array);)
     FLUSH_BEGINEND;
 
    	khint_t k;
@@ -909,7 +1149,7 @@ void APIENTRY_GL4ES gl4es_glBindVertexArray(GLuint array) {
     noerrorShim();
 }
 void APIENTRY_GL4ES gl4es_glDeleteVertexArrays(GLsizei n, const GLuint *arrays) {
-    DBG(printf("glDeleteVertexArrays(%i, %p)\n", n, arrays);)
+    DBG(SHUT_LOGD("glDeleteVertexArrays(%i, %p)\n", n, arrays);)
     if(!glstate) return;
     FLUSH_BEGINEND;
 
@@ -932,8 +1172,10 @@ void APIENTRY_GL4ES gl4es_glDeleteVertexArrays(GLsizei n, const GLuint *arrays) 
     }
     noerrorShim();
 }
+
+
 GLboolean APIENTRY_GL4ES gl4es_glIsVertexArray(GLuint array) {
-    DBG(printf("glIsVertexArray(%u)\n", array);)
+    DBG(SHUT_LOGD("glIsVertexArray(%u)\n", array);)
     if(!glstate)
         return GL_FALSE;
 	khash_t(glvao) *list = glstate->vaos;
@@ -946,6 +1188,41 @@ GLboolean APIENTRY_GL4ES gl4es_glIsVertexArray(GLuint array) {
 		}
 	}
 	return GL_FALSE;
+}
+
+VISIBLE void glBufferStorage(GLenum target, GLsizeiptr size, const void* data, GLbitfield flags) {
+    // TODO: Add GL_COPY_READ_BUFFER and GL_COPY_WRITE_BUFFER
+	/*
+	glbuffer_t* bufferObj = (glbuffer_t*)malloc(sizeof(glbuffer_t));
+    gl4es_glGenBuffers(1, &bufferObj->buffer);
+    gl4es_glBindBuffer(target, bufferObj->buffer);
+    bufferObj->type = target;
+    bufferObj->size = size;
+    if (flags & GL_DYNAMIC_STORAGE_BIT) {
+        bufferObj->usage = GL_DYNAMIC_DRAW;
+    } else if (flags & GL_MAP_PERSISTENT_BIT) {
+        bufferObj->usage = GL_STATIC_DRAW;
+    } else {
+        bufferObj->usage = GL_STATIC_DRAW;
+    }
+    gl4es_glBufferData(target, size, data, bufferObj->usage);
+    if (data) {
+        bufferObj->original_data = malloc(size);
+        memcpy(bufferObj->original_data, data, size);
+    } else {
+        bufferObj->original_data = NULL;
+    }
+    DBG(SHUT_LOGD("Buffer storage created with ID: %u, size: %lld, usage: %u\n", bufferObj->buffer, (long long)size, bufferObj->usage);)
+	*/
+}
+__attribute__((visibility("default"))) void glDeleteBufferStorage(glbuffer_t* bufferObj) {
+    if (bufferObj) {
+        if (bufferObj->original_data) {
+            free(bufferObj->original_data);
+        }
+        glDeleteBuffers(1, &bufferObj->buffer);
+        free(bufferObj);
+    }
 }
 
 void VaoSharedClear(glvao_t *vao) {
