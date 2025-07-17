@@ -10,7 +10,7 @@
 #include "vgpu/shaderconv.h"
 #include "../glsl/glsl_for_es.h"
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #define DBG(a) a
 #else
