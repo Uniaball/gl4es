@@ -10,7 +10,7 @@
 #include "init.h"
 #include "loader.h"
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #define DBG(a) a
 #else
@@ -684,18 +684,28 @@ void APIENTRY_GL4ES gl4es_glCopyBufferSubData(GLenum readTarget, GLenum writeTar
         errorShim(GL_INVALID_OPERATION);
         return;
     }
-    // TODO: check memory overlap and overread/overwrite
-    memcpy((char*)writebuff->data+writeOffset, (char*)readbuff->data+readOffset, size);
-    if(writebuff->real_buffer && (writebuff->type==GL_ARRAY_BUFFER || writebuff->type==GL_ELEMENT_ARRAY_BUFFER) && writebuff->mapped && (writebuff->access==GL_WRITE_ONLY || writebuff->access==GL_READ_WRITE)) {
+    memcpy((char*)writebuff->data + writeOffset, (char*)readbuff->data + readOffset, size);
+    if (writebuff->real_buffer && (writebuff->type == GL_ARRAY_BUFFER || writebuff->type == GL_ELEMENT_ARRAY_BUFFER) &&
+        writebuff->mapped && (writebuff->access == GL_WRITE_ONLY || writebuff->access == GL_READ_WRITE)) {
         LOAD_GLES(glBufferSubData);
         bindBuffer(writebuff->type, writebuff->real_buffer);
         gles_glBufferSubData(writebuff->type, writeOffset, size, (char*)writebuff->data+writeOffset);
     }
+    
+    if (readTarget == GL_COPY_READ_BUFFER) {
+        DBG(SHUT_LOGD("GL_ARRAY_BUFFER data: %p\nGL_COPY_READ_BUFFER data: %p\n", getbuffer_buffer(GL_ARRAY_BUFFER)->data, readbuff->data);)
+        LOAD_GLES(glBufferSubData);
+        glstate->vao->write = writebuff;
+        bindBuffer(writebuff->type, writebuff->real_buffer);
+        gles_glBufferSubData(writebuff->type, writeOffset, size, (char*)writebuff->data + writeOffset);
+    }
+    
     noerrorShim();
 }
 
 void bindBuffer(GLenum target, GLuint buffer)
 {
+    DBG(SHUT_LOGD("bindBuffer(%s, %i)\n", PrintEnum(target), buffer);)
     LOAD_GLES(glBindBuffer);
     if(target==GL_ARRAY_BUFFER) {
         if(glstate->bind_buffer.array == buffer)
@@ -709,7 +719,19 @@ void bindBuffer(GLenum target, GLuint buffer)
         if(glstate->bind_buffer.index == buffer)
             return;
         glstate->bind_buffer.index = buffer;
-        DBG(printf("Bind buffer %d to GL_ELEMENT_ARRAY_BUFFER\n", buffer);)
+        DBG(SHUT_LOGD("Bind buffer %d to GL_ELEMENT_ARRAY_BUFFER\n", buffer);)
+        gles_glBindBuffer(target, buffer);
+    } else if (target == GL_COPY_READ_BUFFER) {
+        if(glstate->bind_buffer.copy_read == buffer)
+            return;
+        glstate->bind_buffer.copy_read = buffer;
+        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_READ_BUFFER\n", buffer);)
+        gles_glBindBuffer(target, buffer);
+    } else if (target == GL_COPY_WRITE_BUFFER) {
+        if(glstate->bind_buffer.copy_write == buffer)
+            return;
+        glstate->bind_buffer.copy_write = buffer;
+        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_WRITE_BUFFER\n", buffer);)
         gles_glBindBuffer(target, buffer);
     } else {
         LOGE("Warning, unhandled Buffer type %s in bindBuffer\n", PrintEnum(target));
@@ -758,8 +780,29 @@ void unboundBuffers()
         glstate->bind_buffer.index = 0;
         glstate->bind_buffer.want_index = 0;
         gles_glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        DBG(printf("Bind buffer %d to GL_ELEMENT_ARRAY_BUFFER\n", 0);)
+        DBG(SHUT_LOGD("Bind buffer %d to GL_ELEMENT_ARRAY_BUFFER\n", 0);)
     }
+    if(glstate->bind_buffer.copy_read) {
+        glstate->bind_buffer.copy_read = 0;
+        gles_glBindBuffer(GL_COPY_READ_BUFFER, 0);
+        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_READ_BUFFER\n", 0);)
+    }
+    if(glstate->bind_buffer.copy_write) {
+        glstate->bind_buffer.copy_write = 0;
+        gles_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_WRITE_BUFFER\n", 0);)
+    }
+    if(glstate->bind_buffer.copy_read) {
+        glstate->bind_buffer.copy_read = 0;
+        gles_glBindBuffer(GL_COPY_READ_BUFFER, 0);
+        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_READ_BUFFER\n", 0);)
+    }
+    if(glstate->bind_buffer.copy_write) {
+        glstate->bind_buffer.copy_write = 0;
+        gles_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+        DBG(SHUT_LOGD("Bind buffer %d to GL_COPY_WRITE_BUFFER\n", 0);)
+        }
+    
     glstate->bind_buffer.used = 0;
 }
 
