@@ -10,7 +10,7 @@
 #include "loader.h"
 #include "render.h"
 
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
 #define DBG(a) a
 #else
