@@ -18,6 +18,8 @@ typedef struct {
     GLintptr    offset;
     GLsizeiptr  length;
     GLvoid     *data;
+    GLvoid*     original_data;
+    
 } glbuffer_t;
 
 KHASH_MAP_DECLARE_INT(buff, glbuffer_t *);
