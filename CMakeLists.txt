@@ -10,7 +10,7 @@ set(CMAKE_C_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -funwind-tables -g -D_THREAD_SAFE -fPIC -stdlib=libc++")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DANDROID -Wno-pointer-sign -Wno-macro-redefined -Wno-dangling-else -Wno-pointer-sign -Wno-implicit-const-int-float-conversion -DNOX11 -fPIC -DNO_GBM -DDEFAULT_ES=3 -g -funwind-tables -O3 -fvisibility=hidden")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DANDROID -Wno-pointer-sign -Wno-macro-redefined -Wno-dangling-else -Wno-implicit-const-int-float-conversion -DNOX11 -fPIC -DNO_GBM -DDEFAULT_ES=3 -g -funwind-tables -O3 -fvisibility=hidden")
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++")
 
@@ -103,13 +103,13 @@ set(CPP_SRC_FILES
 
 set(SRC_FILES ${CPP_SRC_FILES} ${C_SRC_FILES})
 
-find_library(GLSLANG_LIB glslang PATHS ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/)
+find_library(GLSLANG_LIB glslang PATHS ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/)
 
 add_library(gl4es SHARED ${SRC_FILES})
 
 target_link_libraries(gl4es
-        ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/libglslang.a
-        ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/libspirv-cross-c-shared.so
+        ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/libglslang.a
+        ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/libspirv-cross-c-shared.so
         c
         c++_static
         c++abi
