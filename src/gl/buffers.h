@@ -215,6 +215,8 @@ typedef struct {
     // Vertex Attrib
     vertexattrib_t  vertexattrib[MAX_VATTRIB];
     // TODO: Cache VA also?
+    glbuffer_t *read;
+    glbuffer_t *write;
 } glvao_t;
 
 void VaoSharedClear(glvao_t *vao);
