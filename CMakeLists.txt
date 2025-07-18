@@ -110,6 +110,7 @@ add_library(gl4es SHARED ${SRC_FILES})
 target_link_libraries(gl4es
         ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/libglslang.a
         ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/libspirv-cross-c-shared.so
+        ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/libSPIRV-Tools.a
         c
         c++_static
         c++abi
