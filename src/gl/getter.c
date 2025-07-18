@@ -244,14 +244,14 @@ const GLubyte* APIENTRY_GL4ES gl4es_glGetString(GLenum name) {
     errorShim(GL_NO_ERROR);
     switch (name) {
         case GL_VERSION:
-            return (GLubyte *)"2.1 gl4es update wrapper 1.0.6";
+            return (GLubyte *)"2.1 gl4es update wrapper §a1.0.7.Dev";
         case GL_EXTENSIONS:
             BuildExtensionsList();
             return glstate->extensions;
 		case GL_VENDOR:
-			return (GLubyte *)"ptitSeb, Uniaball, aaaapai, BZLZHH";
+			return (GLubyte *)"§rptitSeb, Uniaball, aaaapai, BZLZHH";
 		case GL_RENDERER:
-			return (GLubyte *)"§d§lGL4ES Update wrapper 1.1.7";
+			return (GLubyte *)"GL4ES Update wrapper 1.1.7";
 		case GL_SHADING_LANGUAGE_VERSION:
             if(globals4es.gl==21)
             return (GLubyte *)"1.20 via gl4es";
