@@ -108,8 +108,8 @@ find_library(GLSLANG_LIB glslang PATHS ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_A
 add_library(gl4es SHARED ${SRC_FILES})
 
 target_link_libraries(gl4es
-        ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/libglslang.a
-        ${CMAKE_SOURCE_DIR}/libraries/${ANDROID_ABI}/libspirv-cross-c-shared.so
+        ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/libglslang.a
+        ${CMAKE_SOURCE_DIR}/libraries/arm64-v8a/libspirv-cross-c-shared.so
         c
         c++_static
         c++abi
