@@ -1,6 +1,15 @@
 #ifndef _GL4ES_GL4ES_H_
 #define _GL4ES_GL4ES_H_
 
+//#define DEBUG
+#ifdef DEBUG
+#define DBG(a) a
+#else
+#define DBG(a)
+#endif
+
+#define VISIBLE __attribute__((visibility("default")))
+
 #include "khash.h"
 
 #ifdef __ARM_NEON__
@@ -10,6 +19,7 @@
 #include "wrap/gles.h"
 #include "gles.h"
 #include "glstate.h"
+#include "logs.h"
 
 packed_call_t* APIENTRY_GL4ES glCopyPackedCall(const packed_call_t *packed);
 
