@@ -6823,6 +6823,3 @@ typedef void (*glSamplerParameterIuiv_PTR)(glSamplerParameterIuiv_ARG_EXPAND);
 }
 #endif
 #endif
-#ifdef __cplusplus
-}
-#endif
