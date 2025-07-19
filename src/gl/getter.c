@@ -244,7 +244,7 @@ const GLubyte* APIENTRY_GL4ES gl4es_glGetString(GLenum name) {
     errorShim(GL_NO_ERROR);
     switch (name) {
         case GL_VERSION:
-            return (GLubyte *)"2.1 gl4es update wrapper §a1.0.7.Dev";
+            return (GLubyte *)"2.1 gl4es update wrapper §a1.0.6.2";
         case GL_EXTENSIONS:
             BuildExtensionsList();
             return glstate->extensions;
