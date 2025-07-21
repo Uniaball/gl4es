@@ -371,9 +371,9 @@ typedef struct {
     GLuint  array;
     GLuint  index;
     GLuint  want_index;
-    GLuint copy_read;
-    GLuint copy_write;
     int     used;
+    GLuint copy_write;
+	GLuint copy_read;
 } bind_buffers_t;
 
 
