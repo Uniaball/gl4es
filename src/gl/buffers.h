@@ -18,11 +18,21 @@ typedef struct {
     GLintptr    offset;
     GLsizeiptr  length;
     GLvoid     *data;
+    int         persistent_mapping;
+    int         coherent_mapping;
+    GLbitfield  flags;
+    int         is_mapped;
+    GLvoid*     persistent_ptr;
+    GLsizeiptr  mapped_size;
+    GLintptr    mapped_offset;
+    int         mapping_flags;
     GLvoid*     original_data;
-    
+
 } glbuffer_t;
 
 KHASH_MAP_DECLARE_INT(buff, glbuffer_t *);
+
+void bindBuffer(GLenum target, GLuint buffer);
 
 void APIENTRY_GL4ES gl4es_glGenBuffers(GLsizei n, GLuint * buffers);
 void APIENTRY_GL4ES gl4es_glBindBuffer(GLenum target, GLuint buffer);
