@@ -1259,3 +1259,4 @@ AliasExport(void,glGenVertexArrays,,(GLsizei n, GLuint *arrays));
 AliasExport(void,glBindVertexArray,,(GLuint array));
 AliasExport(void,glDeleteVertexArrays,,(GLsizei n, const GLuint *arrays));
 AliasExport(GLboolean,glIsVertexArray,,(GLuint array));
+
