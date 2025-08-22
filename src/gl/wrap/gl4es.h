@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifndef GL_WRAP_H
 #define GL_WRAP_H
 
@@ -267,4 +270,7 @@ GLvoid APIENTRY_GL4ES glVertexAttrib4NusvARB(GLuint index, const GLushort *v);
 GLvoid APIENTRY_GL4ES glVertexAttrib4NuivARB(GLuint index, const GLuint *v);
 
 
+#endif
+#ifdef __cplusplus
+}
 #endif

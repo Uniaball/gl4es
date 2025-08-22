@@ -1,12 +1,12 @@
-#ifndef __glplatform_h_
-#define __glplatform_h_
+#ifndef __gl3platform_h_
+#define __gl3platform_h_
 
 /*
 ** Copyright 2017-2020 The Khronos Group Inc.
 ** SPDX-License-Identifier: Apache-2.0
 */
 
-/* Platform-specific types and definitions for OpenGL ES 1.X  gl.h
+/* Platform-specific types and definitions for OpenGL ES 3.X  gl3.h
  *
  * Adopters may modify khrplatform.h and this file to suit their platform.
  * Please contribute modifications back to Khronos as pull requests on the
@@ -16,12 +16,12 @@
 
 #include <KHR/khrplatform.h>
 
-#ifndef GL_API
-#define GL_API      KHRONOS_APICALL
+#ifndef GL_APICALL
+#define GL_APICALL  KHRONOS_APICALL
 #endif
 
 #ifndef GL_APIENTRY
 #define GL_APIENTRY KHRONOS_APIENTRY
 #endif
 
-#endif /* __glplatform_h_ */
+#endif /* __gl3platform_h_ */

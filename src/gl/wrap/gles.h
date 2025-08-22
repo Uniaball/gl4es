@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include "../gles.h"
 
 #ifndef GLESWRAP_H
@@ -3765,6 +3768,15 @@ void APIENTRY_GL4ES gl4es_glDeleteProgram(glDeleteProgram_ARG_EXPAND);
 typedef void (APIENTRY_GLES * glDeleteProgram_PTR)(glDeleteProgram_ARG_EXPAND);
 void APIENTRY_GL4ES gl4es_glDeleteRenderbuffers(glDeleteRenderbuffers_ARG_EXPAND);
 typedef void (APIENTRY_GLES * glDeleteRenderbuffers_PTR)(glDeleteRenderbuffers_ARG_EXPAND);
+#define glGetUniformBlockIndex_ARG_EXPAND GLuint program, const GLchar * uniformBlockName
+GLuint APIENTRY_GL4ES  gl4es_glGetUniformBlockIndex(glGetUniformBlockIndex_ARG_EXPAND);
+typedef GLuint(APIENTRY_GLES* glGetUniformBlockIndex_PTR)(glGetUniformBlockIndex_ARG_EXPAND);
+#define glUniformBlockBinding_ARG_EXPAND GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding
+void APIENTRY_GL4ES  gl4es_glUniformBlockBinding(glUniformBlockBinding_ARG_EXPAND);
+typedef void (APIENTRY_GLES* glUniformBlockBinding_PTR)(glUniformBlockBinding_ARG_EXPAND);
+#define glGetActiveUniformBlockiv_ARG_EXPAND GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint * params
+void APIENTRY_GL4ES  gl4es_glGetActiveUniformBlockiv(glGetActiveUniformBlockiv_ARG_EXPAND);
+typedef void (APIENTRY_GLES* glGetActiveUniformBlockiv_PTR)(glGetActiveUniformBlockiv_ARG_EXPAND);
 void APIENTRY_GL4ES gl4es_glDeleteShader(glDeleteShader_ARG_EXPAND);
 typedef void (APIENTRY_GLES * glDeleteShader_PTR)(glDeleteShader_ARG_EXPAND);
 void APIENTRY_GL4ES gl4es_glDeleteTextures(glDeleteTextures_ARG_EXPAND);
@@ -3933,6 +3945,9 @@ GLboolean APIENTRY_GL4ES gl4es_glIsShader(glIsShader_ARG_EXPAND);
 typedef GLboolean (APIENTRY_GLES * glIsShader_PTR)(glIsShader_ARG_EXPAND);
 GLboolean APIENTRY_GL4ES gl4es_glIsTexture(glIsTexture_ARG_EXPAND);
 typedef GLboolean (APIENTRY_GLES * glIsTexture_PTR)(glIsTexture_ARG_EXPAND);
+typedef GLuint(APIENTRY_GLES* glGetUniformBlockIndex_PTR)(GLuint program, const GLchar* uniformBlockName);
+typedef void   (APIENTRY_GLES* glUniformBlockBinding_PTR)(GLuint program, GLuint uniformBlockIndex, GLuint uniformBlockBinding);
+typedef void   (APIENTRY_GLES* glGetActiveUniformBlockiv_PTR)(GLuint program, GLuint uniformBlockIndex, GLenum pname, GLint* params);
 void APIENTRY_GL4ES gl4es_glLightModelf(glLightModelf_ARG_EXPAND);
 typedef void (APIENTRY_GLES * glLightModelf_PTR)(glLightModelf_ARG_EXPAND);
 void APIENTRY_GL4ES gl4es_glLightModelfv(glLightModelfv_ARG_EXPAND);
@@ -4216,6 +4231,70 @@ typedef void (*glSamplerParameterIiv_PTR)(glSamplerParameterIiv_ARG_EXPAND);
 #define glSamplerParameterIuiv_ARG_EXPAND GLuint sampler, GLenum pname, GLuint *params
 void gl4es_glSamplerParameterIuiv(glSamplerParameterIuiv_ARG_EXPAND);
 typedef void (*glSamplerParameterIuiv_PTR)(glSamplerParameterIuiv_ARG_EXPAND);
+
+#define glGetActiveUniformBlockName_ARG_EXPAND GLuint program, GLuint uniformBlockIndex, GLsizei bufSize, GLsizei *length, GLchar *uniformBlockName
+void gl4es_glGetActiveUniformBlockName(glGetActiveUniformBlockName_ARG_EXPAND);
+typedef void (*glGetActiveUniformBlockName_PTR)(glGetActiveUniformBlockName_ARG_EXPAND);
+
+#define glBindBufferRange_ARG_EXPAND GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size
+void gl4es_glBindBufferRange(glBindBufferRange_ARG_EXPAND);
+typedef void (*glBindBufferRange_PTR)(glBindBufferRange_ARG_EXPAND);
+
+#define glBindBufferBase_ARG_EXPAND GLenum target, GLuint index, GLuint buffer
+void gl4es_glBindBufferBase(glBindBufferBase_ARG_EXPAND);
+typedef void (*glBindBufferBase_PTR)(glBindBufferBase_ARG_EXPAND);
+
+#define glTexBuffer_ARG_EXPAND GLenum target, GLenum internalformat, GLuint buffer
+void gl4es_glTexBuffer(glTexBuffer_ARG_EXPAND);
+typedef void (*glTexBuffer_PTR)(glTexBuffer_ARG_EXPAND);
+
+#define glGetTexLevelParameterfv_ARG_EXPAND GLenum target, GLint level, GLenum pname, GLfloat *params
+void gl4es_glGetTexLevelParameterfv(glGetTexLevelParameterfv_ARG_EXPAND);
+typedef void (*glGetTexLevelParameterfv_PTR)(glGetTexLevelParameterfv_ARG_EXPAND);
+
+#define glMapBufferRange_ARG_EXPAND GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access
+void* gl4es_glMapBufferRange(glMapBufferRange_ARG_EXPAND);
+typedef void* (*glMapBufferRange_PTR)(glMapBufferRange_ARG_EXPAND);
+
+#define glUnmapBuffer_ARG_EXPAND GLenum target
+GLboolean gl4es_glUnmapBuffer(glUnmapBuffer_ARG_EXPAND);
+typedef GLboolean (*glUnmapBuffer_PTR)(glUnmapBuffer_ARG_EXPAND);
+
+#define glDrawElementsIndirect_ARG_EXPAND GLenum mode, GLenum type, const void *indirect
+void gl4es_glDrawElementsIndirect(glDrawElementsIndirect_ARG_EXPAND);
+typedef void (*glDrawElementsIndirect_PTR)(glDrawElementsIndirect_ARG_EXPAND);
+
+#define glDrawArraysIndirect_ARG_EXPAND GLenum mode, const void *indirect
+void gl4es_glDrawArraysIndirect(glDrawArraysIndirect_ARG_EXPAND);
+typedef void (*glDrawArraysIndirect_PTR)(glDrawArraysIndirect_ARG_EXPAND);
+
+#define glFenceSync_ARG_EXPAND GLenum condition, GLbitfield flags
+GLsync gl4es_glFenceSync(glFenceSync_ARG_EXPAND);
+typedef GLsync (*glFenceSync_PTR)(glFenceSync_ARG_EXPAND);
+
+#define glIsSync_ARG_EXPAND GLsync sync
+GLboolean gl4es_glIsSync(glIsSync_ARG_EXPAND);
+typedef GLboolean (*glIsSync_PTR)(glIsSync_ARG_EXPAND);
+
+#define glDeleteSync_ARG_EXPAND GLsync sync
+void gl4es_glDeleteSync(glDeleteSync_ARG_EXPAND);
+typedef void (*glDeleteSync_PTR)(glDeleteSync_ARG_EXPAND);
+
+#define glClientWaitSync_ARG_EXPAND GLsync sync, GLbitfield flags, GLuint64 timeout
+GLenum gl4es_glClientWaitSync(glClientWaitSync_ARG_EXPAND);
+typedef GLenum (*glClientWaitSync_PTR)(glClientWaitSync_ARG_EXPAND);
+
+#define glWaitSync_ARG_EXPAND GLsync sync, GLbitfield flags, GLuint64 timeout
+void gl4es_glWaitSync(glWaitSync_ARG_EXPAND);
+typedef void (*glWaitSync_PTR)(glWaitSync_ARG_EXPAND);
+
+#define glGetSynciv_ARG_EXPAND GLsync sync, GLenum pname, GLsizei bufSize, GLsizei *length, GLint *values
+void gl4es_glGetSynciv(glGetSynciv_ARG_EXPAND);
+typedef void (*glGetSynciv_PTR)(glGetSynciv_ARG_EXPAND);
+
+#define glMultiDrawElementsBaseVertex_ARG_EXPAND GLenum mode, const GLsizei *count, GLenum type, const void *const* indices, GLsizei drawcount, const GLint *basevertex
+void gl4es_glMultiDrawElementsBaseVertex(glMultiDrawElementsBaseVertex_ARG_EXPAND);
+typedef void (*glMultiDrawElementsBaseVertex_PTR)(glMultiDrawElementsBaseVertex_ARG_EXPAND);
 
 #ifndef direct_glActiveTexture
 #define push_glActiveTexture(texture) { \
@@ -6822,4 +6901,7 @@ typedef void (*glSamplerParameterIuiv_PTR)(glSamplerParameterIuiv_ARG_EXPAND);
     glPushCall((void *)packed_data); \
 }
 #endif
+#endif
+#ifdef __cplusplus
+}
 #endif

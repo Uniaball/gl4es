@@ -815,7 +815,7 @@ AliasExport(void,glMultiTexCoord2f,,(GLenum target, GLfloat s, GLfloat t));
 AliasExport(void,glMultiTexCoord3f,,(GLenum target, GLfloat s, GLfloat t, GLfloat r));
 AliasExport(void,glMultiTexCoord3fv,,(GLenum target, GLfloat *t));
 //AliasExport(void,glMultiTexCoord4fv,,(GLenum target, GLfloat *t));
-AliasExport(void,glGetTexLevelParameteriv,,(GLenum target, GLint level, GLenum pname, GLfloat *params));
+AliasExport(void,glGetTexLevelParameteriv,,(GLenum target, GLint level, GLenum pname, GLint *params));
 AliasExport_M(void,glTexGend,,(GLenum coord, GLenum pname, GLdouble param),16);
 AliasExport(void,glTexGenf,,(GLenum coord, GLenum pname, GLfloat param));
 AliasExport(void,glTexGendv,,(GLenum coord, GLenum pname, const GLdouble *params));
