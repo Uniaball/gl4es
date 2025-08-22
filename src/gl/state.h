@@ -368,14 +368,17 @@ typedef struct {
 } queries_t;
 
 typedef struct {
-    GLuint  array;
-    GLuint  index;
-    GLuint  want_index;
-    int     used;
+	GLuint array;
+    GLuint index;
+    GLuint uniform;
+    GLuint want_index;
+    int used;
     GLuint copy_write;
-	GLuint copy_read;
-	GLuint texture;
-	GLuint uniform;
+    GLuint copy_read;
+    GLuint texture;
+    GLuint pack;
+    GLuint unpack;
+    GLuint indirect;
 } bind_buffers_t;
 
 
