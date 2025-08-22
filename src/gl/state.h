@@ -374,6 +374,8 @@ typedef struct {
     int     used;
     GLuint copy_write;
 	GLuint copy_read;
+	GLuint texture;
+	GLuint uniform;
 } bind_buffers_t;
 
 
